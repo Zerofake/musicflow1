@@ -14,8 +14,8 @@ export function BottomNavBar() {
   const pathname = usePathname();
 
   return (
-    <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-black to-transparent">
-        <nav className="absolute bottom-2 left-2 right-2 flex items-center justify-around h-16 bg-card border border-border rounded-xl shadow-lg">
+    <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-black to-transparent">
+        <nav className="absolute bottom-4 left-4 right-4 flex items-center justify-around h-16 bg-card border border-border rounded-xl shadow-lg">
       {navItems.map((item) => {
         const isActive = item.href === "/" ? pathname === item.href : pathname.startsWith(item.href);
         return (

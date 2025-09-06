@@ -13,6 +13,8 @@ interface MusicContextType {
   playNext: () => void;
   playPrev: () => void;
   seek: (time: number) => void;
+  isRepeating: boolean;
+  toggleRepeat: () => void;
 }
 
 export const MusicContext = createContext<MusicContextType | null>(null);
@@ -24,16 +26,24 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
   const [currentSongIndex, setCurrentSongIndex] = useState(-1);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [isRepeating, setIsRepeating] = useState(false);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
-    audioRef.current = new Audio();
-    const audio = audioRef.current;
+    const audio = new Audio();
+    audioRef.current = audio;
 
     const handleTimeUpdate = () => setCurrentTime(audio.currentTime);
     const handleLoadedMetadata = () => setDuration(audio.duration);
-    const handleEnded = () => playNext();
+    const handleEnded = () => {
+      if (isRepeating) {
+        audio.currentTime = 0;
+        audio.play();
+      } else {
+        playNext();
+      }
+    };
 
     audio.addEventListener('timeupdate', handleTimeUpdate);
     audio.addEventListener('loadedmetadata', handleLoadedMetadata);
@@ -44,7 +54,7 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
       audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
       audio.removeEventListener('ended', handleEnded);
     };
-  }, []);
+  }, [isRepeating]); // Re-attach event listener when isRepeating changes
 
   const playSong = useCallback((song: Song, songQueue: Song[] = []) => {
     setCurrentSong(song);
@@ -54,7 +64,8 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
     }
     if (songQueue.length > 0) {
       setQueue(songQueue);
-      setCurrentSongIndex(songQueue.findIndex(s => s.id === song.id));
+      const songIndex = songQueue.findIndex(s => s.id === song.id);
+      setCurrentSongIndex(songIndex !== -1 ? songIndex : 0);
     } else {
       setQueue([song]);
       setCurrentSongIndex(0);
@@ -66,7 +77,6 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
     const nextIndex = (currentSongIndex + 1) % queue.length;
     playSong(queue[nextIndex], queue);
   }, [currentSongIndex, queue, playSong]);
-
 
   const togglePlay = useCallback(() => {
     if (!audioRef.current || !currentSong) return;
@@ -80,6 +90,10 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
 
   const playPrev = useCallback(() => {
     if (queue.length === 0) return;
+    if(audioRef.current && audioRef.current.currentTime > 3) {
+        audioRef.current.currentTime = 0;
+        return;
+    }
     const prevIndex = (currentSongIndex - 1 + queue.length) % queue.length;
     playSong(queue[prevIndex], queue);
   }, [currentSongIndex, queue, playSong]);
@@ -91,6 +105,11 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  const toggleRepeat = useCallback(() => {
+    setIsRepeating(prev => !prev);
+  }, []);
+
+
   const value = {
     isPlaying,
     currentSong,
@@ -101,6 +120,8 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
     playNext,
     playPrev,
     seek,
+    isRepeating,
+    toggleRepeat,
   };
 
   return (
