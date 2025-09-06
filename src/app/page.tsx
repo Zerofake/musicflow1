@@ -1,13 +1,29 @@
+"use client";
+
 import Image from 'next/image';
 import Link from 'next/link';
-import { playlists } from '@/lib/data';
+import { useState } from 'react';
+import { useMusic } from '@/hooks/useMusic';
 import { Card, CardContent } from '@/components/ui/card';
-import { Play } from 'lucide-react';
+import { Play, Plus } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { CreatePlaylistDialog } from '@/components/CreatePlaylistDialog';
 
 export default function PlaylistsPage() {
+  const { playlists } = useMusic();
+  const [dialogOpen, setDialogOpen] = useState(false);
+
   return (
     <div className="p-4 sm:p-6">
-      <h1 className="text-3xl font-bold mb-6">Playlists</h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">Playlists</h1>
+        <Button onClick={() => setDialogOpen(true)}>
+          <Plus className="mr-2 h-4 w-4" /> Criar Playlist
+        </Button>
+      </div>
+
+      <CreatePlaylistDialog open={dialogOpen} onOpenChange={setDialogOpen} />
+      
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
         {playlists.map((playlist) => (
           <Link href={`/playlists/${playlist.id}`} key={playlist.id} className="group relative">

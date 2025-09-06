@@ -4,7 +4,7 @@ import type { Song, Playlist } from './types';
 // For web demo purposes, using silent audio files to avoid copyright issues.
 const silentAudio = 'data:audio/mp3;base64,SUQzBAAAAAABEVRYWFgAAAAtAAADY29tbWVudABCaWdTb3VuZEJhbmsuY29tIC8gUmVjb3JkZWQgb24gMjAwOS0wNy0wMANRVUFVVEFYWFgLAAAAgWa9dxAADUFBQULQDgLAAAAgWa9dxAADURVVFVRLYh9gAAAAB/B4gAAAAAABqgVf/7VgAAAAgWa9dxAADURVVFVRLYh9gAAAAB/B4gAAAAAABqgVf/7VgAAAAgWa9dxAADURVVFVRLYh9gAAAAB/B4gAAAAAABqgVf/7VgAAAAgWa9dxAADURVVFVRLYh9gAAAAB/B4gAAAAAABqgVf/7Vg';
 
-export const songs: Song[] = [
+export const initialSongs: Song[] = [
   {
     id: '1',
     title: 'Energia Cósmica',
@@ -97,7 +97,7 @@ export const songs: Song[] = [
   },
 ];
 
-export const playlists: Playlist[] = [
+export const initialPlaylists: Playlist[] = [
   {
     id: '1',
     name: 'Downloads',
