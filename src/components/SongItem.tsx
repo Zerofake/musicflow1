@@ -1,7 +1,7 @@
 "use client";
 
 import Image from 'next/image';
-import { Play, GripVertical, PlusCircle, MinusCircle } from 'lucide-react';
+import { Play, GripVertical, PlusCircle, MinusCircle, Music, Pause } from 'lucide-react';
 import { useMusic } from '@/hooks/useMusic';
 import type { Song } from '@/lib/types';
 import { cn } from '@/lib/utils';
@@ -15,6 +15,7 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useEffect, useRef, useState } from 'react';
 
 interface SongItemProps {
   song: Song;
@@ -28,11 +29,31 @@ interface SongItemProps {
 }
 
 export function SongItem({ song, playlistSongs, playlistId, draggable = false, ...dragProps }: SongItemProps) {
-  const { playSong, currentSong, playlists, addSongToPlaylist, removeSongFromPlaylist } = useMusic();
+  const { playSong, currentSong, isPlaying, togglePlay, playlists, addSongToPlaylist, removeSongFromPlaylist } = useMusic();
   const isActive = currentSong?.id === song.id;
+  
+  const [duration, setDuration] = useState(song.duration);
+  const audioRef = useRef<HTMLAudioElement>();
+
+  useEffect(() => {
+    const audio = new Audio(song.audioSrc);
+    audioRef.current = audio;
+    audio.addEventListener('loadedmetadata', () => {
+        setDuration(audio.duration);
+    });
+    // Cleanup
+    return () => {
+        audio.removeEventListener('loadedmetadata', () => {});
+    }
+  }, [song.audioSrc]);
+
 
   const handlePlay = () => {
-    playSong(song, playlistSongs);
+    if (isActive) {
+        togglePlay();
+    } else {
+        playSong(song, playlistSongs);
+    }
   };
 
   const handleAddSongToPlaylist = (playlistId: string) => {
@@ -46,6 +67,7 @@ export function SongItem({ song, playlistSongs, playlistId, draggable = false, .
   };
 
   const formatTime = (seconds: number) => {
+    if (isNaN(seconds) || seconds < 0) return '0:00';
     const minutes = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
     return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
@@ -61,7 +83,7 @@ export function SongItem({ song, playlistSongs, playlistId, draggable = false, .
       onDrop={dragProps.onDrop}
       className={cn(
         "flex items-center gap-4 p-2 rounded-lg hover:bg-card transition-colors group",
-        isActive && "bg-card"
+        isActive && "bg-card shadow-sm"
       )}
     >
       {draggable && (
@@ -74,7 +96,11 @@ export function SongItem({ song, playlistSongs, playlistId, draggable = false, .
           className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity"
           aria-label={`Tocar ${song.title}`}
         >
-          <Play className="h-6 w-6 text-white fill-white" />
+          {isActive && isPlaying ? (
+            <Pause className="h-6 w-6 text-white fill-white" />
+          ) : (
+            <Play className="h-6 w-6 text-white fill-white" />
+          )}
         </button>
       </div>
       <div className="flex-1 overflow-hidden">
@@ -83,7 +109,7 @@ export function SongItem({ song, playlistSongs, playlistId, draggable = false, .
         </p>
         <p className="text-sm text-muted-foreground truncate">{song.artist}</p>
       </div>
-      <p className="text-sm text-muted-foreground mr-2">{formatTime(song.duration)}</p>
+      <p className="text-sm text-muted-foreground mr-2">{formatTime(duration)}</p>
       
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
