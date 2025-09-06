@@ -2,13 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ListMusic, Music, Sparkles } from "lucide-react";
+import { ListMusic, Music } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/", label: "Playlists", icon: ListMusic },
   { href: "/songs", label: "Músicas", icon: Music },
-  { href: "/smart-playlist", label: "Sugestões", icon: Sparkles },
 ];
 
 export function BottomNavBar() {

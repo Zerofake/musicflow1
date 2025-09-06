@@ -2,7 +2,6 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { MusicProvider } from '@/context/MusicProvider';
 import { AppShell } from '@/components/AppShell';
-import { Toaster } from '@/components/ui/toaster';
 
 export const metadata: Metadata = {
   title: 'Music Flow',
@@ -27,7 +26,6 @@ export default function RootLayout({
             {children}
           </AppShell>
         </MusicProvider>
-        <Toaster />
       </body>
     </html>
   );
