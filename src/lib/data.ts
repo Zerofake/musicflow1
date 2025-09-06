@@ -1,9 +1,5 @@
 import type { Song, Playlist } from './types';
 
-// Note: Using placeholder audio. In a real app, these would be local file URIs.
-// For web demo purposes, using silent audio files to avoid copyright issues.
-const silentAudio = 'data:audio/mp3;base64,SUQzBAAAAAABEVRYWFgAAAAtAAADY29tbWVudABCaWdTb3VuZEJhbmsuY29tIC8gUmVjb3JkZWQgb24gMjAwOS0wNy0wMANRVUFVVEFYWFgLAAAAgWa9dxAADUFBQULQDgLAAAAgWa9dxAADURVVFVRLYh9gAAAAB/B4gAAAAAABqgVf/7VgAAAAgWa9dxAADURVVFVRLYh9gAAAAB/B4gAAAAAABqgVf/7VgAAAAgWa9dxAADURVVFVRLYh9gAAAAB/B4gAAAAAABqgVf/7VgAAAAgWa9dxAADURVVFVRLYh9gAAAAB/B4gAAAAAABqgVf/7Vg';
-
 export const initialSongs: Song[] = [
   {
     id: '1',
@@ -12,7 +8,7 @@ export const initialSongs: Song[] = [
     album: 'Galáxias',
     duration: 185,
     coverArt: 'https://picsum.photos/seed/music1/500/500',
-    audioSrc: silentAudio,
+    audioSrc: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
   },
   {
     id: '2',
@@ -21,7 +17,7 @@ export const initialSongs: Song[] = [
     album: 'Céu Estrelado',
     duration: 210,
     coverArt: 'https://picsum.photos/seed/music2/500/500',
-    audioSrc: silentAudio,
+    audioSrc: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3',
   },
   {
     id: '3',
@@ -30,7 +26,7 @@ export const initialSongs: Song[] = [
     album: 'Praia e Brisa',
     duration: 195,
     coverArt: 'https://picsum.photos/seed/music3/500/500',
-    audioSrc: silentAudio,
+    audioSrc: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3',
   },
   {
     id: '4',
@@ -39,7 +35,7 @@ export const initialSongs: Song[] = [
     album: 'Natureza Viva',
     duration: 240,
     coverArt: 'https://picsum.photos/seed/music4/500/500',
-    audioSrc: silentAudio,
+    audioSrc: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3',
   },
   {
     id: '5',
@@ -48,7 +44,7 @@ export const initialSongs: Song[] = [
     album: 'Galáxias',
     duration: 220,
     coverArt: 'https://picsum.photos/seed/music5/500/500',
-    audioSrc: silentAudio,
+    audioSrc: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3',
   },
   {
     id: '6',
@@ -57,7 +53,7 @@ export const initialSongs: Song[] = [
     album: 'Céu Estrelado',
     duration: 180,
     coverArt: 'https://picsum.photos/seed/music6/500/500',
-    audioSrc: silentAudio,
+    audioSrc: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3',
   },
   {
     id: '7',
@@ -66,7 +62,7 @@ export const initialSongs: Song[] = [
     album: 'Praia e Brisa',
     duration: 200,
     coverArt: 'https://picsum.photos/seed/music7/500/500',
-    audioSrc: silentAudio,
+    audioSrc: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-7.mp3',
   },
   {
     id: '8',
@@ -75,7 +71,7 @@ export const initialSongs: Song[] = [
     album: 'Natureza Viva',
     duration: 190,
     coverArt: 'https://picsum.photos/seed/music8/500/500',
-    audioSrc: silentAudio,
+    audioSrc: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3',
   },
   {
     id: '9',
@@ -84,7 +80,7 @@ export const initialSongs: Song[] = [
     album: 'Galáxias',
     duration: 205,
     coverArt: 'https://picsum.photos/seed/music9/500/500',
-    audioSrc: silentAudio,
+    audioSrc: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-9.mp3',
   },
   {
     id: '10',
@@ -93,7 +89,7 @@ export const initialSongs: Song[] = [
     album: 'Céu Estrelado',
     duration: 170,
     coverArt: 'https://picsum.photos/seed/music10/500/500',
-    audioSrc: silentAudio,
+    audioSrc: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-10.mp3',
   },
 ];
 
