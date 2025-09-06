@@ -19,13 +19,15 @@ export function BottomNavBar() {
       {navItems.map((item) => {
         const isActive = item.href === "/" ? pathname === item.href : pathname.startsWith(item.href);
         return (
-          <Link href={item.href} key={item.href} legacyBehavior>
-            <a className="flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-primary transition-colors">
-              <item.icon className={cn("h-6 w-6", isActive && "text-primary")} />
-              <span className={cn("text-xs font-medium", isActive && "text-primary")}>
-                {item.label}
-              </span>
-            </a>
+          <Link
+            href={item.href}
+            key={item.href}
+            className="flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-primary transition-colors"
+          >
+            <item.icon className={cn("h-6 w-6", isActive && "text-primary")} />
+            <span className={cn("text-xs font-medium", isActive && "text-primary")}>
+              {item.label}
+            </span>
           </Link>
         );
       })}
