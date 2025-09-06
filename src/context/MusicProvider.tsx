@@ -44,8 +44,8 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
   const [isRepeating, setIsRepeating] = useState(false);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
-
-  const handlePlayNext = useCallback(() => {
+  
+  const playNext = useCallback(() => {
     if (queue.length === 0) return;
     const nextIndex = (currentSongIndex + 1) % queue.length;
     // We need to use the functional form of setState here to get the latest queue
@@ -54,7 +54,6 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
       return prevQueue;
     });
   }, [currentSongIndex, queue.length]);
-
 
   useEffect(() => {
     const audio = new Audio();
@@ -67,7 +66,7 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
         audio.currentTime = 0;
         audio.play();
       } else {
-        handlePlayNext();
+        playNext();
       }
     };
 
@@ -80,11 +79,27 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
       audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
       audio.removeEventListener('ended', handleEnded);
     };
-  }, [isRepeating, handlePlayNext]);
+  }, [isRepeating, playNext]);
+
+  const togglePlay = useCallback(() => {
+    if (!audioRef.current || !currentSong) return;
+    if (isPlaying) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+    } else {
+      audioRef.current.play().then(() => setIsPlaying(true)).catch(e => console.error("Error playing audio:", e));
+    }
+  }, [isPlaying, currentSong]);
 
   const playSong = useCallback((song: Song, songQueue: Song[] = []) => {
+    if (audioRef.current?.src === song.audioSrc) {
+        togglePlay();
+        return;
+    }
+
     setCurrentSong(song);
     if (audioRef.current) {
+      audioRef.current.pause();
       // Reset time and duration for the new song
       setCurrentTime(0);
       setDuration(0);
@@ -103,8 +118,7 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
       setCurrentSongIndex(songIndex !== -1 ? songIndex : 0);
       setQueue(allSongsQueue);
     }
-  }, [songs]);
-  
+  }, [songs, togglePlay]);
 
   const createPlaylist = useCallback((name: string, description: string) => {
     const newPlaylist: Playlist = {
@@ -151,17 +165,7 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
     }));
   }, []);
 
-  const togglePlay = useCallback(() => {
-    if (!audioRef.current || !currentSong) return;
-    if (isPlaying) {
-      audioRef.current.pause();
-      setIsPlaying(false);
-    } else {
-      audioRef.current.play().then(() => setIsPlaying(true)).catch(e => console.error("Error playing audio:", e));
-    }
-  }, [isPlaying, currentSong]);
-
-    const playPrev = useCallback(() => {
+  const playPrev = useCallback(() => {
     if (queue.length === 0) return;
     if(audioRef.current && audioRef.current.currentTime > 3) {
         audioRef.current.currentTime = 0;
@@ -171,11 +175,6 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
     playSong(queue[prevIndex], queue);
   }, [currentSongIndex, queue, playSong]);
 
-  const playNext = useCallback(() => {
-    if (queue.length === 0) return;
-    const nextIndex = (currentSongIndex + 1) % queue.length;
-    playSong(queue[nextIndex], queue);
-  }, [currentSongIndex, queue, playSong]);
 
   const seek = useCallback((time: number) => {
     if (audioRef.current) {
