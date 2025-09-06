@@ -1,7 +1,8 @@
+
 "use client";
 
 import Image from 'next/image';
-import { notFound, useRouter } from 'next/navigation';
+import { notFound, useRouter, useParams } from 'next/navigation';
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { useMusic } from '@/hooks/useMusic';
 import { SongItem } from '@/components/SongItem';
@@ -25,7 +26,8 @@ import {
 } from '@/components/ui/alert-dialog';
 import type { Song } from '@/lib/types';
 
-export default function PlaylistDetailPage({ params }: { params: { id: string } }) {
+export default function PlaylistDetailPage() {
+  const params = useParams();
   const { playlists, songs, deletePlaylist, updatePlaylist } = useMusic();
   const router = useRouter();
   const playlist = playlists.find((p) => p.id === params.id);
@@ -54,7 +56,7 @@ export default function PlaylistDetailPage({ params }: { params: { id: string } 
   };
 
   const handleDragEnd = () => {
-    if (dragItem.current && dragOverItem.current && dragItem.current !== dragOverItem.current) {
+    if (dragItem.current && dragOverItem.current && dragItem.current !== dragOverItem.current && typeof params.id === 'string') {
       const newSongIds = [...(playlist?.songIds || [])];
       const dragItemIndex = newSongIds.indexOf(dragItem.current);
       const dragOverItemIndex = newSongIds.indexOf(dragOverItem.current);
@@ -73,8 +75,10 @@ export default function PlaylistDetailPage({ params }: { params: { id: string } 
   }
   
   const handleDeletePlaylist = () => {
-    deletePlaylist(params.id);
-    router.push('/');
+    if (typeof params.id === 'string') {
+        deletePlaylist(params.id);
+        router.push('/');
+    }
   };
 
   return (
@@ -119,7 +123,7 @@ export default function PlaylistDetailPage({ params }: { params: { id: string } 
                 key={song.id} 
                 song={song}
                 playlistSongs={playlistSongs}
-                playlistId={params.id}
+                playlistId={typeof params.id === 'string' ? params.id : undefined}
                 draggable
                 onDragStart={handleDragStart}
                 onDragEnter={handleDragEnter}
