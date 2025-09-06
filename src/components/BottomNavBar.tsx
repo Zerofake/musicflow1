@@ -1,0 +1,36 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { ListMusic, Music, Sparkles } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+const navItems = [
+  { href: "/", label: "Playlists", icon: ListMusic },
+  { href: "/songs", label: "Músicas", icon: Music },
+  { href: "/smart-playlist", label: "Sugestões", icon: Sparkles },
+];
+
+export function BottomNavBar() {
+  const pathname = usePathname();
+
+  return (
+    <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-black to-transparent">
+        <nav className="absolute bottom-2 left-2 right-2 flex items-center justify-around h-16 bg-card border border-border rounded-xl shadow-lg">
+      {navItems.map((item) => {
+        const isActive = item.href === "/" ? pathname === item.href : pathname.startsWith(item.href);
+        return (
+          <Link href={item.href} key={item.href} legacyBehavior>
+            <a className="flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-primary transition-colors">
+              <item.icon className={cn("h-6 w-6", isActive && "text-primary")} />
+              <span className={cn("text-xs font-medium", isActive && "text-primary")}>
+                {item.label}
+              </span>
+            </a>
+          </Link>
+        );
+      })}
+    </nav>
+    </div>
+  );
+}
