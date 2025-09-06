@@ -1,7 +1,7 @@
 "use client";
 
 import Image from 'next/image';
-import { Play, Pause, SkipBack, SkipForward, Repeat } from 'lucide-react';
+import { Play, Pause, SkipBack, SkipForward, Repeat, Music } from 'lucide-react';
 import { useMusic } from '@/hooks/useMusic';
 import { Slider } from '@/components/ui/slider';
 import { Button } from '@/components/ui/button';
@@ -39,14 +39,18 @@ export function MusicPlayer() {
     <div className="absolute bottom-24 left-0 right-0 px-4 animate-in slide-in-from-bottom-5 duration-500">
         <div className="flex flex-col h-full items-center gap-2 rounded-xl bg-card/80 backdrop-blur-xl p-3 border border-border shadow-lg">
             <div className="w-full flex items-center gap-3">
-              <div className="relative h-14 w-14 overflow-hidden rounded-md flex-shrink-0">
-                  <Image
-                  src={currentSong.coverArt}
-                  alt={currentSong.album}
-                  fill
-                  className="object-cover"
-                  data-ai-hint="music album cover"
-                  />
+              <div className="relative h-14 w-14 overflow-hidden rounded-md flex-shrink-0 bg-muted flex items-center justify-center">
+                  {currentSong.coverArt ? (
+                    <Image
+                      src={currentSong.coverArt}
+                      alt={currentSong.album}
+                      fill
+                      className="object-cover"
+                      data-ai-hint="music album cover"
+                    />
+                  ) : (
+                    <Music className="h-8 w-8 text-muted-foreground" />
+                  )}
               </div>
               <div className="flex-1 overflow-hidden">
                   <p className="font-bold truncate">{currentSong.title}</p>

@@ -36,16 +36,9 @@ export function SongItem({ song, playlistSongs, playlistId, draggable = false, .
   const audioRef = useRef<HTMLAudioElement>();
 
   useEffect(() => {
-    const audio = new Audio(song.audioSrc);
-    audioRef.current = audio;
-    audio.addEventListener('loadedmetadata', () => {
-        setDuration(audio.duration);
-    });
-    // Cleanup
-    return () => {
-        audio.removeEventListener('loadedmetadata', () => {});
-    }
-  }, [song.audioSrc]);
+    // A duração agora é definida no MusicProvider
+    setDuration(song.duration);
+  }, [song.duration]);
 
 
   const handlePlay = () => {
@@ -89,8 +82,12 @@ export function SongItem({ song, playlistSongs, playlistId, draggable = false, .
       {draggable && (
         <GripVertical className="h-5 w-5 text-muted-foreground cursor-grab" />
       )}
-      <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-md">
-        <Image src={song.coverArt} alt={song.album} fill className="object-cover" data-ai-hint="music album cover" />
+      <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-md bg-muted flex items-center justify-center">
+        {song.coverArt ? (
+          <Image src={song.coverArt} alt={song.album} fill className="object-cover" data-ai-hint="music album cover" />
+        ) : (
+          <Music className="h-6 w-6 text-muted-foreground" />
+        )}
         <button
           onClick={handlePlay}
           className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity"
