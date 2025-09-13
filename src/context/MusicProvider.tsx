@@ -4,13 +4,15 @@ import type { Song, Playlist } from '@/lib/types';
 import { initialSongs, initialPlaylists } from '@/lib/data';
 import React, { createContext, useState, useRef, useEffect, useCallback } from 'react';
 
+const MAX_FREE_PLAYLISTS = 6;
+
 interface MusicContextType {
   // Songs
   songs: Song[];
   
   // Playlists
   playlists: Playlist[];
-  createPlaylist: (name: string, description: string) => void;
+  createPlaylist: (name: string, description: string) => boolean;
   deletePlaylist: (playlistId: string) => void;
   updatePlaylist: (playlistId: string, data: Partial<Omit<Playlist, 'id'>>) => void;
   addSongToPlaylist: (playlistId: string, songId: string) => void;
@@ -28,6 +30,11 @@ interface MusicContextType {
   seek: (time: number) => void;
   isRepeating: boolean;
   toggleRepeat: () => void;
+  
+  // Monetization
+  credits: number;
+  addCredits: (amount: number) => void;
+  canCreatePlaylist: { can: boolean; needsCredits: boolean };
 }
 
 export const MusicContext = createContext<MusicContextType | null>(null);
@@ -42,41 +49,44 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [isRepeating, setIsRepeating] = useState(false);
+  const [credits, setCredits] = useState(0);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  
+  const addCredits = useCallback((amount: number) => {
+    setCredits(prev => prev + amount);
+  }, []);
+
+  const canCreatePlaylist = React.useMemo(() => {
+    const isOverLimit = playlists.length >= MAX_FREE_PLAYLISTS;
+    return {
+        can: !isOverLimit || credits > 0,
+        needsCredits: isOverLimit
+    }
+  }, [playlists.length, credits]);
 
   const playSong = useCallback((song: Song, songQueue: Song[] = []) => {
-    // If it's the same song, just toggle play/pause
-    if (audioRef.current && audioRef.current.src.endsWith(song.audioSrc) && currentSong?.id === song.id) {
-      if (isPlaying) {
-        audioRef.current.pause();
-        setIsPlaying(false);
-      } else {
-        audioRef.current.play().catch(e => console.error("Error playing audio:", e));;
-        setIsPlaying(true);
-      }
-      return;
-    }
-    
-    // If a song is already playing, pause it before switching
-    if (audioRef.current) {
-        audioRef.current.pause();
+    if (audioRef.current && audioRef.current.src && !audioRef.current.paused) {
+      audioRef.current.pause();
     }
     
     setCurrentSong(song);
-    // If no queue is provided, create one with all songs
+    
     const newQueue = songQueue.length > 0 ? songQueue : [...songs];
     setQueue(newQueue);
     setCurrentSongIndex(newQueue.findIndex(s => s.id === song.id));
 
-    if (audioRef.current) {
-        audioRef.current.src = song.audioSrc;
-        audioRef.current.load();
-        audioRef.current.play()
-          .then(() => setIsPlaying(true))
-          .catch(e => console.error("Error playing audio:", e));
+    const audio = audioRef.current ? audioRef.current : new Audio();
+    if (!audioRef.current) {
+        audioRef.current = audio;
     }
-  }, [isPlaying, currentSong, songs]);
+    
+    audio.src = song.audioSrc;
+    audio.load();
+    audio.play()
+      .then(() => setIsPlaying(true))
+      .catch(e => console.error("Error playing audio:", e));
+  }, [songs]);
 
 
   const playNext = useCallback(() => {
@@ -94,9 +104,6 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
 
     const handleTimeUpdate = () => setCurrentTime(audio.currentTime);
     const handleLoadedMetadata = () => setDuration(audio.duration);
-    const handleCanPlay = () => {
-      setDuration(audio.duration);
-    };
     const handleEnded = () => {
       if (isRepeating) {
         audio.currentTime = 0;
@@ -108,13 +115,11 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
 
     audio.addEventListener('timeupdate', handleTimeUpdate);
     audio.addEventListener('loadedmetadata', handleLoadedMetadata);
-    audio.addEventListener('canplay', handleCanPlay);
     audio.addEventListener('ended', handleEnded);
 
     return () => {
       audio.removeEventListener('timeupdate', handleTimeUpdate);
       audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
-      audio.removeEventListener('canplay', handleCanPlay);
       audio.removeEventListener('ended', handleEnded);
     };
   }, [isRepeating, playNext]);
@@ -130,7 +135,15 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
   }, [isPlaying, currentSong]);
 
 
-  const createPlaylist = useCallback((name: string, description: string) => {
+  const createPlaylist = useCallback((name: string, description: string): boolean => {
+    if (!canCreatePlaylist.can) {
+        return false;
+    }
+
+    if (canCreatePlaylist.needsCredits) {
+        setCredits(prev => prev - 1);
+    }
+    
     const newPlaylist: Playlist = {
       id: Date.now().toString(),
       name,
@@ -139,7 +152,8 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
       coverArt: `https://picsum.photos/seed/${Date.now()}/500/500`
     };
     setPlaylists(prev => [...prev, newPlaylist]);
-  }, []);
+    return true;
+  }, [canCreatePlaylist]);
 
   const deletePlaylist = useCallback((playlistId: string) => {
     setPlaylists(prev => prev.filter(p => p.id !== playlistId));
@@ -216,6 +230,9 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
     seek,
     isRepeating,
     toggleRepeat,
+    credits,
+    addCredits,
+    canCreatePlaylist
   };
 
   return (

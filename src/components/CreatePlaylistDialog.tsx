@@ -16,16 +16,18 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 export function CreatePlaylistDialog({ open, onOpenChange }: { open: boolean, onOpenChange: (open: boolean) => void }) {
-  const { createPlaylist } = useMusic();
+  const { createPlaylist, canCreatePlaylist } = useMusic();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
 
   const handleSubmit = () => {
     if (name) {
-      createPlaylist(name, description);
-      setName('');
-      setDescription('');
-      onOpenChange(false);
+      const success = createPlaylist(name, description);
+      if (success) {
+        setName('');
+        setDescription('');
+        onOpenChange(false);
+      }
     }
   };
 
@@ -35,7 +37,10 @@ export function CreatePlaylistDialog({ open, onOpenChange }: { open: boolean, on
         <DialogHeader>
           <DialogTitle>Criar Nova Playlist</DialogTitle>
           <DialogDescription>
-            Dê um nome e uma descrição para sua nova playlist.
+            {canCreatePlaylist.needsCredits 
+              ? "Isso custará 1 crédito. "
+              : "Dê um nome e uma descrição para sua nova playlist."
+            }
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
@@ -70,7 +75,9 @@ export function CreatePlaylistDialog({ open, onOpenChange }: { open: boolean, on
                     Cancelar
                 </Button>
             </DialogClose>
-          <Button onClick={handleSubmit}>Criar Playlist</Button>
+          <Button onClick={handleSubmit}>
+            {canCreatePlaylist.needsCredits ? "Criar e usar 1 crédito" : "Criar Playlist"}
+            </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
