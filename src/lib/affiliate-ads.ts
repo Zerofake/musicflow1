@@ -65,5 +65,14 @@ export interface AffiliateAd {
       source: 'AliExpress',
       price: 'R$ 49,99',
     },
+    {
+      id: '7',
+      imageUrl: 'https://picsum.photos/seed/ad7/200/200',
+      title: 'Blocos de Montar - Mundo dos Dinossauros',
+      description: 'Brinquedos de dinossauros para montar.',
+      link: 'https://s.click.aliexpress.com/e/_oFJLXjH',
+      source: 'AliExpress',
+      price: 'R$ 4,75'
+    }
   ];
   
