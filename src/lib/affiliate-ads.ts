@@ -99,6 +99,14 @@ export interface AffiliateAd {
       description: 'Clique para ver mais detalhes.',
       link: 'https://s.click.aliexpress.com/e/_oC6XJ6T',
       source: 'AliExpress',
+    },
+    {
+      id: '11',
+      imageUrl: 'https://ae01.alicdn.com/kf/Sff02da080ee1493cbe4f5b1803d7af18L.jpg',
+      title: 'Nova Oferta Imperdível',
+      description: 'Produtos selecionados para você.',
+      link: 'https://s.click.aliexpress.com/e/_okAkbFN',
+      source: 'AliExpress',
     }
   ];
   
