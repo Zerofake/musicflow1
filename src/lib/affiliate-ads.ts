@@ -134,6 +134,15 @@ export interface AffiliateAd {
       link: 'https://s.click.aliexpress.com/e/_oDWcpx9',
       source: 'AliExpress',
       price: 'US $0.96',
+    },
+    {
+      id: '19',
+      imageUrl: 'https://ae01.alicdn.com/kf/Se022ccdeb0974e12827b970f3478c26es.jpg',
+      title: 'Pelúcia Pokémon Pikachu 20cm',
+      description: 'Brinquedo de pelúcia Kawaii Pikachu.',
+      link: 'https://s.click.aliexpress.com/e/_oFeUku7',
+      source: 'AliExpress',
+      price: '$0.99',
     }
 
 
