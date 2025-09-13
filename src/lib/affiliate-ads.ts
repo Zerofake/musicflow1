@@ -33,8 +33,8 @@ export interface AffiliateAd {
     {
       id: '4',
       imageUrl: 'https://ae01.alicdn.com/kf/S3ec3daa2da774a66a01ab62e6d7b953fz.jpg',
-      title: 'Oferta Especial AliExpress',
-      description: 'Confira este produto incrível em promoção.',
+      title: 'Xiaomi 2TB USB Flash Drive',
+      description: 'Pen Drive de alta velocidade e capacidade.',
       link: 'https://s.click.aliexpress.com/e/_okuWRax',
       source: 'AliExpress',
       price: 'US$ 1.20',
@@ -93,10 +93,11 @@ export interface AffiliateAd {
     {
       id: '14',
       imageUrl: 'https://ae01.alicdn.com/kf/S98ce12c3820149419d59a648a90a671fv.jpg',
-      title: 'Olha que legal!',
-      description: 'Confira este item em oferta.',
+      title: 'SomnAmbulist SSD 512 GB',
+      description: 'SSD de alta velocidade para seu PC.',
       link: 'https://s.click.aliexpress.com/e/_omUYkEB',
       source: 'AliExpress',
+      price: '$21.59'
     },
     {
       id: '15',
