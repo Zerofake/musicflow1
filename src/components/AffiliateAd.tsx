@@ -51,11 +51,14 @@ export function AffiliateAd() {
           </div>
           <div className="flex-1 overflow-hidden">
             <p className="font-semibold text-sm truncate text-foreground group-hover:text-primary transition-colors">{ad.title}</p>
-            <p className="text-xs text-muted-foreground truncate">{ad.description}</p>
+            <div className="flex items-center gap-2">
+                {ad.price && <p className="text-sm font-bold text-green-400">{ad.price}</p>}
+                <p className={cn("text-xs text-muted-foreground truncate", ad.price && "line-through")}>{ad.description}</p>
+            </div>
           </div>
            <Badge variant={ad.source === 'Shopee' ? 'default' : 'secondary'} className={cn(
                ad.source === 'Shopee' ? 'bg-[#FF6A00] hover:bg-[#FF6A00]/90' : 'bg-[#FF4747] hover:bg-[#FF4747]/90',
-               'text-white'
+               'text-white text-xs'
            )}>
             {ad.source}
           </Badge>

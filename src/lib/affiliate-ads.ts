@@ -6,6 +6,7 @@ export interface AffiliateAd {
     description: string;
     link: string;
     source: 'AliExpress' | 'Shopee';
+    price?: string;
   }
   
   // Você pode adicionar, editar ou remover seus anúncios de afiliados aqui.
@@ -18,6 +19,7 @@ export interface AffiliateAd {
       description: 'Respirável, anti-deslizante e na moda.',
       link: 'https://s.click.aliexpress.com/e/_oC7iRRV',
       source: 'AliExpress',
+      price: 'R$ 59,19',
     },
     {
       id: '2',
@@ -26,6 +28,7 @@ export interface AffiliateAd {
       description: 'Leve a festa com você. Bateria de longa duração.',
       link: 'https://s.click.aliexpress.com/e/_onXurGP',
       source: 'Shopee',
+      price: 'R$ 89,90',
     },
     {
         id: '3',
@@ -34,6 +37,7 @@ export interface AffiliateAd {
         description: 'Grave suas músicas com qualidade profissional.',
         link: 'https://s.click.aliexpress.com/e/_okb6sZH',
         source: 'AliExpress',
+        price: 'R$ 149,00',
     },
     {
       id: '4',
@@ -50,6 +54,7 @@ export interface AffiliateAd {
       description: 'Alta velocidade de transferência, à prova d\'água.',
       link: 'https://s.click.aliexpress.com/e/_oBKdPUr',
       source: 'AliExpress',
+      price: 'R$ 8,50',
     },
     {
       id: '6',
@@ -58,6 +63,7 @@ export interface AffiliateAd {
       description: 'Qualidade de som superior e cancelamento de ruído.',
       link: 'https://s.click.aliexpress.com/e/_ootMEUj',
       source: 'AliExpress',
+      price: 'R$ 49,99',
     },
   ];
   
