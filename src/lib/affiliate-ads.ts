@@ -37,7 +37,7 @@ export interface AffiliateAd {
         description: 'Grave suas músicas com qualidade profissional.',
         link: 'https://s.click.aliexpress.com/e/_okb6sZH',
         source: 'AliExpress',
-        price: 'R$ 149,00',
+        price: '$25.00',
     },
     {
       id: '4',
@@ -54,7 +54,7 @@ export interface AffiliateAd {
       description: 'Alta velocidade de transferência, à prova d\'água.',
       link: 'https://s.click.aliexpress.com/e/_oBKdPUr',
       source: 'AliExpress',
-      price: 'R$ 8,50',
+      price: '€ 1.57',
     },
     {
       id: '6',
@@ -72,7 +72,7 @@ export interface AffiliateAd {
       description: 'Brinquedos de dinossauros para montar.',
       link: 'https://s.click.aliexpress.com/e/_oFJLXjH',
       source: 'AliExpress',
-      price: 'R$ 4,75'
+      price: '€ 0.86'
     }
   ];
   
