@@ -73,6 +73,14 @@ export interface AffiliateAd {
       link: 'https://s.click.aliexpress.com/e/_oFJLXjH',
       source: 'AliExpress',
       price: '€ 0.86'
+    },
+    {
+      id: '8',
+      imageUrl: 'https://ae01.alicdn.com/kf/S381ac01bb621412ba4268f62efb274abP.jpg',
+      title: 'Oferta Relâmpago',
+      description: 'Não perca esta oportunidade incrível.',
+      link: 'https://s.click.aliexpress.com/e/_ondvap5',
+      source: 'AliExpress',
     }
   ];
   
