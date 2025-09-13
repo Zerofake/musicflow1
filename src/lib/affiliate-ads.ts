@@ -97,6 +97,15 @@ export interface AffiliateAd {
       description: 'Aproveite agora mesmo!',
       link: 'https://s.click.aliexpress.com/e/_omF0XOb',
       source: 'AliExpress',
+    },
+    {
+      id: '13',
+      imageUrl: 'https://ae01.alicdn.com/kf/Acbe922e6c9da41c5bb9e8ce9217edc46c.jpg',
+      title: 'Nova Oferta Especial',
+      description: 'Clique para conferir os detalhes.',
+      link: 'https://s.click.aliexpress.com/e/_onfY33l',
+      source: 'AliExpress',
+      price: 'US $4.62',
     }
   ];
   
