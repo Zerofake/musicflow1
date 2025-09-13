@@ -26,7 +26,7 @@ export default function PlaylistsPage() {
   }
 
   const createButtonTooltip = canCreatePlaylist.needsCredits && !canCreatePlaylist.can
-    ? "Você atingiu o limite de playlists. Compre créditos para criar mais."
+    ? "Você atingiu o limite de playlists. Adquira créditos para criar mais."
     : "Criar nova playlist";
   
   return (
@@ -39,13 +39,13 @@ export default function PlaylistsPage() {
             <span className="font-bold text-yellow-400">{credits}</span>
           </div>
           <Button onClick={() => addCredits(10)} size="sm" variant="outline">
-            <Plus className="mr-1 h-4 w-4" /> Comprar Créditos
+            <Plus className="mr-1 h-4 w-4" /> Comprar (Simulação)
           </Button>
         </div>
       </div>
 
       <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-semibold">Suas Playlists</h2>
+          <h2 className="text-xl font-semibold">Suas Playlists (Local)</h2>
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
