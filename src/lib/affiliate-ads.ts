@@ -106,6 +106,14 @@ export interface AffiliateAd {
       link: 'https://s.click.aliexpress.com/e/_onfY33l',
       source: 'AliExpress',
       price: 'US $4.62',
+    },
+    {
+      id: '14',
+      imageUrl: 'https://ae01.alicdn.com/kf/S98ce12c3820149419d59a648a90a671fv.jpg',
+      title: 'Olha que legal!',
+      description: 'Confira este item em oferta.',
+      link: 'https://s.click.aliexpress.com/e/_omUYkEB',
+      source: 'AliExpress',
     }
   ];
   
