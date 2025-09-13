@@ -41,10 +41,10 @@ export interface AffiliateAd {
     },
     {
       id: '4',
-      imageUrl: 'https://picsum.photos/seed/ad4/200/200',
+      imageUrl: 'https://ae01.alicdn.com/kf/S3ec3daa2da774a66a01ab62e6d7b953fz.jpg',
       title: 'Oferta Especial AliExpress',
       description: 'Confira este produto incrível em promoção.',
-      link: 'https://s.click.aliexpress.com/e/_on4v0F1',
+      link: 'https://s.click.aliexpress.com/e/_okuWRax',
       source: 'AliExpress',
     },
     {
