@@ -81,6 +81,15 @@ export interface AffiliateAd {
       description: 'Não perca esta oportunidade incrível.',
       link: 'https://s.click.aliexpress.com/e/_ondvap5',
       source: 'AliExpress',
+    },
+    {
+      id: '9',
+      imageUrl: 'https://picsum.photos/seed/ad9/200/200',
+      title: 'Blocos de Construção Magnéticos',
+      description: 'Brinquedos sensoriais para crianças.',
+      link: 'https://s.click.aliexpress.com/e/_okUxo7p',
+      source: 'AliExpress',
+      price: '€ 0.86'
     }
   ];
   
