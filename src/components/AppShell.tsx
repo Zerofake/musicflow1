@@ -21,7 +21,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       
       <div className="absolute bottom-24 left-4 right-4 z-10 space-y-2">
         <AffiliateAd />
-        <div className="bg-green-500/20 border border-green-500/50 rounded-lg px-4 py-2 text-center">
+        <div className="bg-green-500/20 border border-green-500/50 rounded-lg px-4 py-2 text-center animate-pulse">
             <p className="text-xs font-semibold text-green-300">Para a melhora do aplicativo, doações em Pix: <span className="font-mono">onlupy@gmail.com</span></p>
         </div>
       </div>
