@@ -116,6 +116,15 @@ export interface AffiliateAd {
       link: 'https://s.click.aliexpress.com/e/_opoaQin',
       source: 'AliExpress',
       price: 'US $7.35',
+    },
+    {
+      id: '17',
+      imageUrl: 'https://ae01.alicdn.com/kf/S9031b3552a4041db89b9531beeda3d6fh.jpg',
+      title: 'Men shoes Sneakers Male',
+      description: '76% off',
+      link: 'https://s.click.aliexpress.com/e/_oDyNa87',
+      source: 'AliExpress',
+      price: 'US $10.72',
     }
   ];
   
