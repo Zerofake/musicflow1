@@ -85,12 +85,20 @@ export interface AffiliateAd {
     },
     {
       id: '9',
-      imageUrl: 'https://picsum.photos/seed/ad9/200/200',
+      imageUrl: 'https://ae01.alicdn.com/kf/S6a0f4a4c5e3a4739a85a420b925b6424e.jpg',
       title: 'Blocos de Construção Magnéticos',
       description: 'Brinquedos sensoriais para crianças.',
       link: 'https://s.click.aliexpress.com/e/_okUxo7p',
       source: 'AliExpress',
       price: '€ 0.86'
+    },
+    {
+      id: '10',
+      imageUrl: 'https://ae01.alicdn.com/kf/S5ec66e16bb9542d381bb91333c90f4177.jpg',
+      title: 'Confira esta Oferta',
+      description: 'Clique para ver mais detalhes.',
+      link: 'https://s.click.aliexpress.com/e/_oC6XJ6T',
+      source: 'AliExpress',
     }
   ];
   
