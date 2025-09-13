@@ -68,7 +68,7 @@ export interface AffiliateAd {
     },
     {
       id: '7',
-      imageUrl: 'https://picsum.photos/seed/ad7/200/200',
+      imageUrl: 'https://ae01.alicdn.com/kf/S6a0f4a4c5e3a4739a85a420b925b6424e.jpg',
       title: 'Blocos de Montar - Mundo dos Dinossauros',
       description: 'Brinquedos de dinossauros para montar.',
       link: 'https://s.click.aliexpress.com/e/_oFJLXjH',
@@ -106,6 +106,14 @@ export interface AffiliateAd {
       title: 'Nova Oferta Imperdível',
       description: 'Produtos selecionados para você.',
       link: 'https://s.click.aliexpress.com/e/_okAkbFN',
+      source: 'AliExpress',
+    },
+    {
+      id: '12',
+      imageUrl: 'https://ae01.alicdn.com/kf/Sa19dd387a400404ab684291c1dd0744aA.jpg',
+      title: 'Super Desconto',
+      description: 'Aproveite agora mesmo!',
+      link: 'https://s.click.aliexpress.com/e/_omF0XOb',
       source: 'AliExpress',
     }
   ];
