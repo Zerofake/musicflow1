@@ -40,15 +40,6 @@ export interface AffiliateAd {
       price: 'US$ 1.20',
     },
     {
-      id: '5',
-      imageUrl: 'https://ae01.alicdn.com/kf/S0874c76b0485452d9b68c31d680190a6x.jpg',
-      title: 'Xiaomi 2TB USB 3.2 Flash Drive',
-      description: 'Alta velocidade de transferência, à prova d\'água.',
-      link: 'https://s.click.aliexpress.com/e/_oBKdPUr',
-      source: 'AliExpress',
-      price: '€ 1.57',
-    },
-    {
       id: '7',
       imageUrl: 'https://ae01.alicdn.com/kf/S6a0f4a4c5e3a4739a85a420b925b6424e.jpg',
       title: 'Blocos de Montar - Mundo dos Dinossauros',
