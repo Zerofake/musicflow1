@@ -24,7 +24,7 @@ export interface AffiliateAd {
     {
       id: '6',
       imageUrl: 'https://ae01.alicdn.com/kf/S4c8e71805ac24d9cb113515ed64883a7Y.jpg',
-      title: 'Fone de Ouvido Bluetooth',
+      title: 'Robô 3D com múltiplas articulações e mudança de forma móvel',
       description: 'Qualidade de som superior e cancelamento de ruído.',
       link: 'https://s.click.aliexpress.com/e/_ootMEUj',
       source: 'AliExpress',
@@ -126,5 +126,8 @@ export interface AffiliateAd {
       source: 'AliExpress',
       price: 'US $10.72',
     }
+
+
+
   ];
   
