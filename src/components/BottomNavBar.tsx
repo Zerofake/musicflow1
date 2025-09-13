@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Music2, Headphones, CloudUpload } from "lucide-react";
+import { Headphones, CloudUpload } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { LogoIcon } from "@/components/icons/LogoIcon";
 
 const navItems = [
-  { href: "/", label: "Playlists", icon: Music2 },
+  { href: "/", label: "Playlists", icon: LogoIcon },
   { href: "/songs", label: "Músicas", icon: Headphones },
   { href: "/cloud", label: "Nuvem", icon: CloudUpload },
 ];
