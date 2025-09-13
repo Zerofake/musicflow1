@@ -125,6 +125,15 @@ export interface AffiliateAd {
       link: 'https://s.click.aliexpress.com/e/_oDyNa87',
       source: 'AliExpress',
       price: 'US $10.72',
+    },
+    {
+      id: '18',
+      imageUrl: 'https://ae01.alicdn.com/kf/S9f99fa86c441476291de741538490309f.jpg',
+      title: 'Imã de Geladeira Solo Leveling',
+      description: 'Anime Sung Jin-Woo Cosplay 58mm',
+      link: 'https://s.click.aliexpress.com/e/_oDWcpx9',
+      source: 'AliExpress',
+      price: 'US $0.96',
     }
 
 
