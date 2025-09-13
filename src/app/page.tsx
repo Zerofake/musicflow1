@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { useMusic } from '@/hooks/useMusic';
 import { Card, CardContent } from '@/components/ui/card';
-import { Play, Plus, Coins, HardDrive } from 'lucide-react';
+import { Play, Plus, Coins, HardDrive, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CreatePlaylistDialog } from '@/components/CreatePlaylistDialog';
 import {
@@ -99,6 +99,23 @@ export default function PlaylistsPage() {
           </Link>
         ))}
       </div>
+
+      <Card className="mt-8 bg-muted/30 border-dashed">
+        <CardContent className="p-4">
+          <div className="flex items-start gap-3">
+            <Info className="h-5 w-5 text-muted-foreground flex-shrink-0 mt-0.5" />
+            <div>
+                <h4 className="font-semibold text-sm">Informações Importantes</h4>
+                <ul className="list-disc list-inside text-xs text-muted-foreground mt-2 space-y-1">
+                    <li>Você pode criar até 6 playlists gratuitas.</li>
+                    <li>Para criar mais 6 (total de 12), será necessário usar créditos.</li>
+                    <li>Todas as suas músicas e playlists são salvas localmente no seu dispositivo.</li>
+                    <li>Para salvar na nuvem e acessar de qualquer lugar, conheça nossos <Link href="/cloud" className="text-primary underline">Planos de Nuvem</Link>.</li>
+                </ul>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

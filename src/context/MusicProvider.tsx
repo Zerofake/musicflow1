@@ -4,7 +4,8 @@ import type { Song, Playlist } from '@/lib/types';
 import { initialSongs, initialPlaylists } from '@/lib/data';
 import React, { createContext, useState, useRef, useEffect, useCallback } from 'react';
 
-const MAX_FREE_PLAYLISTS = 12;
+const MAX_FREE_PLAYLISTS = 6;
+const MAX_TOTAL_PLAYLISTS = 12;
 const PLAYLIST_COST = 25; // Custo em créditos para criar uma playlist
 const MAX_STORAGE_MB = 500; 
 
@@ -35,7 +36,7 @@ interface MusicContextType {
   
   // Monetization & Storage
   credits: number;
-  addCredits: (amount: number) => void; // Manter para futura integração com Play Store
+  addCredits: (amount: number) => void;
   canCreatePlaylist: { can: boolean; needsCredits: boolean; message: string };
   totalStorageUsed: number;
 }
@@ -68,6 +69,14 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const canCreatePlaylist = React.useMemo(() => {
+    if (playlists.length >= MAX_TOTAL_PLAYLISTS) {
+      return {
+        can: false,
+        needsCredits: false,
+        message: `Você atingiu o limite máximo de ${MAX_TOTAL_PLAYLISTS} playlists.`,
+      };
+    }
+
     const isOverStorageLimit = totalStorageUsed >= MAX_STORAGE_MB;
     if (isOverStorageLimit) {
         return {
@@ -77,8 +86,8 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
         }
     }
     
-    const isOverPlaylistLimit = playlists.length >= MAX_FREE_PLAYLISTS;
-    if (isOverPlaylistLimit && credits < PLAYLIST_COST) {
+    const isOverFreeLimit = playlists.length >= MAX_FREE_PLAYLISTS;
+    if (isOverFreeLimit && credits < PLAYLIST_COST) {
         return {
             can: false,
             needsCredits: true,
@@ -88,8 +97,8 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
     
     return {
         can: true,
-        needsCredits: isOverPlaylistLimit,
-        message: isOverPlaylistLimit ? `Isso custará ${PLAYLIST_COST} créditos.` : "Crie uma nova playlist."
+        needsCredits: isOverFreeLimit,
+        message: isOverFreeLimit ? `Isso custará ${PLAYLIST_COST} créditos.` : `Você pode criar mais ${MAX_FREE_PLAYLISTS - playlists.length} playlists gratuitas.`
     }
   }, [playlists.length, credits, totalStorageUsed]);
 
