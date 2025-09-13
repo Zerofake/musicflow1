@@ -1,0 +1,1 @@
+Por favor, adicione seus arquivos de ícone (icon-192x192.png e icon-512x512.png) nesta pasta e exclua este arquivo.
