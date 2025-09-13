@@ -106,6 +106,7 @@ export interface AffiliateAd {
       description: 'Clique para mais detalhes.',
       link: 'https://s.click.aliexpress.com/e/_onkaGZ5',
       source: 'AliExpress',
+      price: 'US $12.08',
     },
     {
       id: '16',
