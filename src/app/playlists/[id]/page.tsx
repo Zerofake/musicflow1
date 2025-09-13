@@ -7,7 +7,7 @@ import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { useMusic } from '@/hooks/useMusic';
 import { SongItem } from '@/components/SongItem';
 import { Button } from '@/components/ui/button';
-import { MoreVertical, Trash2 } from 'lucide-react';
+import { MoreVertical, Trash2, ArrowLeft } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -93,6 +93,11 @@ export default function PlaylistDetailPage() {
           priority
         />
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/70 to-transparent" />
+        <div className="absolute top-4 left-4">
+            <Button variant="ghost" size="icon" onClick={() => router.back()} className="bg-black/30 backdrop-blur-sm">
+                <ArrowLeft className="h-5 w-5" />
+            </Button>
+        </div>
         <div className="absolute top-4 right-4">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
