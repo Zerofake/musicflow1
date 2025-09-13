@@ -57,7 +57,7 @@ export function AffiliateAd() {
             </div>
           </div>
            <Badge variant={ad.source === 'Shopee' ? 'default' : 'secondary'} className={cn(
-               ad.source === 'Shopee' ? 'bg-[#FF6A00] hover:bg-[#FF6A00]/90' : 'bg-[#FF4747] hover:bg-[#FF4747]/90',
+               ad.source === 'Shopee' ? 'bg-[#FF6A00] hover:bg-[#FF6A00]/90' : 'bg-secondary text-secondary-foreground',
                'text-white text-xs'
            )}>
             {ad.source}

@@ -26,7 +26,7 @@ export interface AffiliateAd {
       imageUrl: 'https://picsum.photos/seed/ad2/200/200',
       title: 'Caixa de Som Portátil',
       description: 'Leve a festa com você. Bateria de longa duração.',
-      link: 'https://s.click.aliexpress.com/e/_onXurGP',
+      link: 'https://s.shopee.com.br/7fQPS51IQb',
       source: 'Shopee',
       price: 'R$ 89,90',
     },
