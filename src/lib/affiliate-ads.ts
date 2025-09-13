@@ -51,5 +51,13 @@ export interface AffiliateAd {
       link: 'https://s.click.aliexpress.com/e/_oBKdPUr',
       source: 'AliExpress',
     },
+    {
+      id: '6',
+      imageUrl: 'https://ae01.alicdn.com/kf/S4c8e71805ac24d9cb113515ed64883a7Y.jpg',
+      title: 'Fone de Ouvido Bluetooth',
+      description: 'Qualidade de som superior e cancelamento de ruído.',
+      link: 'https://s.click.aliexpress.com/e/_ootMEUj',
+      source: 'AliExpress',
+    },
   ];
   
