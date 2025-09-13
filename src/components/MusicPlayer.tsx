@@ -36,7 +36,7 @@ export function MusicPlayer() {
   };
 
   return (
-    <div className="absolute bottom-24 left-0 right-0 px-4 animate-in slide-in-from-bottom-5 duration-500">
+    <div className="absolute bottom-40 left-0 right-0 px-4 animate-in slide-in-from-bottom-5 duration-500">
         <div className="flex flex-col h-full items-center gap-2 rounded-xl bg-card/80 backdrop-blur-xl p-3 border border-border shadow-lg">
             <div className="w-full flex items-center gap-3">
               <div className="relative h-14 w-14 overflow-hidden rounded-md flex-shrink-0 bg-muted flex items-center justify-center">
