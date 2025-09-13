@@ -37,7 +37,7 @@ export interface AffiliateAd {
         description: 'Grave suas músicas com qualidade profissional.',
         link: 'https://s.click.aliexpress.com/e/_okb6sZH',
         source: 'AliExpress',
-        price: '$25.00',
+        price: 'US$ 25.00',
     },
     {
       id: '4',
@@ -46,6 +46,7 @@ export interface AffiliateAd {
       description: 'Confira este produto incrível em promoção.',
       link: 'https://s.click.aliexpress.com/e/_okuWRax',
       source: 'AliExpress',
+      price: 'US$ 1.20',
     },
     {
       id: '5',
@@ -63,7 +64,7 @@ export interface AffiliateAd {
       description: 'Qualidade de som superior e cancelamento de ruído.',
       link: 'https://s.click.aliexpress.com/e/_ootMEUj',
       source: 'AliExpress',
-      price: 'R$ 49,99',
+      price: 'R$ 10,78',
     },
     {
       id: '7',
