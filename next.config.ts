@@ -22,6 +22,12 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'ae01.alicdn.com',
+        port: '',
+        pathname: '/**',
+      },
     ],
   },
 };
