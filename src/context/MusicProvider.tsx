@@ -4,7 +4,9 @@ import type { Song, Playlist } from '@/lib/types';
 import { initialSongs, initialPlaylists } from '@/lib/data';
 import React, { createContext, useState, useRef, useEffect, useCallback } from 'react';
 
-const MAX_FREE_PLAYLISTS = 6;
+const MAX_FREE_PLAYLISTS = 12;
+const PLAYLIST_COST = 25; // Custo em créditos para criar uma playlist
+const MAX_STORAGE_MB = 500; 
 
 interface MusicContextType {
   // Songs
@@ -31,13 +33,17 @@ interface MusicContextType {
   isRepeating: boolean;
   toggleRepeat: () => void;
   
-  // Monetization
+  // Monetization & Storage
   credits: number;
-  addCredits: (amount: number) => void;
-  canCreatePlaylist: { can: boolean; needsCredits: boolean };
+  addCredits: (amount: number) => void; // Manter para futura integração com Play Store
+  canCreatePlaylist: { can: boolean; needsCredits: boolean; message: string };
+  totalStorageUsed: number;
 }
 
 export const MusicContext = createContext<MusicContextType | null>(null);
+
+// Simula um tamanho médio em MB para cada música, já que não temos o tamanho real
+const getSimulatedSongSize = (duration: number) => (duration / 60) * 4;
 
 export function MusicProvider({ children }: { children: React.ReactNode }) {
   const [songs, setSongs] = useState<Song[]>(initialSongs);
@@ -53,17 +59,39 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   
+  const totalStorageUsed = React.useMemo(() => {
+    return songs.reduce((acc, song) => acc + getSimulatedSongSize(song.duration), 0);
+  }, [songs]);
+  
   const addCredits = useCallback((amount: number) => {
     setCredits(prev => prev + amount);
   }, []);
 
   const canCreatePlaylist = React.useMemo(() => {
-    const isOverLimit = playlists.length >= MAX_FREE_PLAYLISTS;
-    return {
-        can: !isOverLimit || credits > 0,
-        needsCredits: isOverLimit
+    const isOverStorageLimit = totalStorageUsed >= MAX_STORAGE_MB;
+    if (isOverStorageLimit) {
+        return {
+            can: false,
+            needsCredits: false,
+            message: `Você atingiu o limite de ${MAX_STORAGE_MB}MB. Considere um plano de nuvem.`
+        }
     }
-  }, [playlists.length, credits]);
+    
+    const isOverPlaylistLimit = playlists.length >= MAX_FREE_PLAYLISTS;
+    if (isOverPlaylistLimit && credits < PLAYLIST_COST) {
+        return {
+            can: false,
+            needsCredits: true,
+            message: `Custa ${PLAYLIST_COST} créditos para criar mais playlists.`
+        }
+    }
+    
+    return {
+        can: true,
+        needsCredits: isOverPlaylistLimit,
+        message: isOverPlaylistLimit ? `Isso custará ${PLAYLIST_COST} créditos.` : "Crie uma nova playlist."
+    }
+  }, [playlists.length, credits, totalStorageUsed]);
 
   const playSong = useCallback((song: Song, songQueue: Song[] = []) => {
     if (audioRef.current && audioRef.current.src && !audioRef.current.paused) {
@@ -136,12 +164,12 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
 
 
   const createPlaylist = useCallback((name: string, description: string): boolean => {
-    if (!canCreatePlaylist.can) {
+    if (!canCreatePlaylist.can || !name || name.length > 200) {
         return false;
     }
 
     if (canCreatePlaylist.needsCredits) {
-        setCredits(prev => prev - 1);
+        setCredits(prev => prev - PLAYLIST_COST);
     }
     
     const newPlaylist: Playlist = {
@@ -232,7 +260,8 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
     toggleRepeat,
     credits,
     addCredits,
-    canCreatePlaylist
+    canCreatePlaylist,
+    totalStorageUsed
   };
 
   return (

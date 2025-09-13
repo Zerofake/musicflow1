@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { useMusic } from '@/hooks/useMusic';
 import { Card, CardContent } from '@/components/ui/card';
-import { Play, Plus, Coins } from 'lucide-react';
+import { Play, Plus, Coins, HardDrive } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CreatePlaylistDialog } from '@/components/CreatePlaylistDialog';
 import {
@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/tooltip"
 
 export default function PlaylistsPage() {
-  const { playlists, canCreatePlaylist, addCredits, credits } = useMusic();
+  const { playlists, canCreatePlaylist, credits, totalStorageUsed } = useMusic();
   const [dialogOpen, setDialogOpen] = useState(false);
 
   const handleCreatePlaylistClick = () => {
@@ -25,22 +25,26 @@ export default function PlaylistsPage() {
     }
   }
 
-  const createButtonTooltip = canCreatePlaylist.needsCredits && !canCreatePlaylist.can
-    ? "Você atingiu o limite de playlists. Adquira créditos para criar mais."
-    : "Criar nova playlist";
+  const formatStorage = (mb: number) => {
+    if (mb < 1024) {
+      return `${mb.toFixed(1)} MB`;
+    }
+    return `${(mb / 1024).toFixed(2)} GB`;
+  }
   
   return (
     <div className="p-4 sm:p-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Playlists</h1>
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-2 border border-yellow-500/50 bg-yellow-500/10 rounded-full px-3 py-1">
-            <Coins className="h-5 w-5 text-yellow-500" />
+          <div className="flex items-center gap-2 border border-yellow-500/50 bg-yellow-500/10 rounded-full px-3 py-1 text-xs sm:text-sm">
+            <Coins className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-500" />
             <span className="font-bold text-yellow-400">{credits}</span>
           </div>
-          <Button onClick={() => addCredits(10)} size="sm" variant="outline">
-            <Plus className="mr-1 h-4 w-4" /> Comprar (Simulação)
-          </Button>
+          <div className="flex items-center gap-2 border border-cyan-500/50 bg-cyan-500/10 rounded-full px-3 py-1 text-xs sm:text-sm">
+            <HardDrive className="h-4 w-4 sm:h-5 sm:w-5 text-cyan-500" />
+            <span className="font-bold text-cyan-400">{formatStorage(totalStorageUsed)}</span>
+          </div>
         </div>
       </div>
 
@@ -57,7 +61,7 @@ export default function PlaylistsPage() {
                 </div>
               </TooltipTrigger>
               <TooltipContent>
-                <p>{createButtonTooltip}</p>
+                <p>{canCreatePlaylist.message}</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>

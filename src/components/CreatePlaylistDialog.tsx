@@ -19,16 +19,37 @@ export function CreatePlaylistDialog({ open, onOpenChange }: { open: boolean, on
   const { createPlaylist, canCreatePlaylist } = useMusic();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
+  const [error, setError] = useState('');
 
-  const handleSubmit = () => {
-    if (name) {
-      const success = createPlaylist(name, description);
-      if (success) {
-        setName('');
-        setDescription('');
-        onOpenChange(false);
-      }
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newName = e.target.value;
+    if (newName.length > 200) {
+      setError('O nome da playlist não pode ter mais de 200 caracteres.');
+    } else {
+      setError('');
     }
+    setName(newName);
+  };
+  
+  const handleSubmit = () => {
+    if (!name || name.length > 200) {
+      setError('O nome é obrigatório e não pode exceder 200 caracteres.');
+      return;
+    }
+    const success = createPlaylist(name, description);
+    if (success) {
+      setName('');
+      setDescription('');
+      setError('');
+      onOpenChange(false);
+    }
+  };
+
+  const getButtonText = () => {
+    if (canCreatePlaylist.needsCredits) {
+      return `Criar (Custo: 25 créditos)`;
+    }
+    return "Criar Playlist";
   };
 
   return (
@@ -37,10 +58,7 @@ export function CreatePlaylistDialog({ open, onOpenChange }: { open: boolean, on
         <DialogHeader>
           <DialogTitle>Criar Nova Playlist</DialogTitle>
           <DialogDescription>
-            {canCreatePlaylist.needsCredits 
-              ? "Isso custará 1 crédito. "
-              : "Dê um nome e uma descrição para sua nova playlist."
-            }
+            {canCreatePlaylist.message}
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
@@ -51,9 +69,10 @@ export function CreatePlaylistDialog({ open, onOpenChange }: { open: boolean, on
             <Input
               id="name"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={handleNameChange}
               className="col-span-3"
               placeholder="Minha playlist de rock"
+              maxLength={200}
             />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
@@ -68,6 +87,7 @@ export function CreatePlaylistDialog({ open, onOpenChange }: { open: boolean, on
               placeholder="As melhores do rock clássico!"
             />
           </div>
+          {error && <p className="col-span-4 text-destructive text-sm text-center">{error}</p>}
         </div>
         <DialogFooter>
             <DialogClose asChild>
@@ -75,9 +95,9 @@ export function CreatePlaylistDialog({ open, onOpenChange }: { open: boolean, on
                     Cancelar
                 </Button>
             </DialogClose>
-          <Button onClick={handleSubmit}>
-            {canCreatePlaylist.needsCredits ? "Criar e usar 1 crédito" : "Criar Playlist"}
-            </Button>
+          <Button onClick={handleSubmit} disabled={!canCreatePlaylist.can || !!error}>
+            {getButtonText()}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
