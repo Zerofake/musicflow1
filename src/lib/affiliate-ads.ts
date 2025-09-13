@@ -49,14 +49,6 @@ export interface AffiliateAd {
       price: '€ 0.86'
     },
     {
-      id: '8',
-      imageUrl: 'https://ae01.alicdn.com/kf/S381ac01bb621412ba4268f62efb274abP.jpg',
-      title: 'Oferta Relâmpago',
-      description: 'Não perca esta oportunidade incrível.',
-      link: 'https://s.click.aliexpress.com/e/_ondvap5',
-      source: 'AliExpress',
-    },
-    {
       id: '9',
       imageUrl: 'https://ae01.alicdn.com/kf/S4c8e71805ac24d9cb113515ed64883a7Y.jpg',
       title: 'Blocos de Construção Magnéticos',
@@ -104,6 +96,14 @@ export interface AffiliateAd {
       title: 'Olha que legal!',
       description: 'Confira este item em oferta.',
       link: 'https://s.click.aliexpress.com/e/_omUYkEB',
+      source: 'AliExpress',
+    },
+    {
+      id: '15',
+      imageUrl: 'https://ae01.alicdn.com/kf/Sd54c331d24a0449c8aa3b1c1de9896b6H.jpg',
+      title: 'Super Oferta',
+      description: 'Clique para mais detalhes.',
+      link: 'https://s.click.aliexpress.com/e/_onkaGZ5',
       source: 'AliExpress',
     }
   ];
