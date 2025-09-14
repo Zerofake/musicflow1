@@ -114,9 +114,9 @@ export default function PlaylistDetailPage() {
           </DropdownMenu>
         </div>
         <div className="absolute bottom-0 left-0 p-4 sm:p-6">
-          <p className="text-sm font-medium">Playlist</p>
+          <p className="text-sm font-medium text-foreground/80">Playlist</p>
           <h1 className="text-4xl sm:text-5xl font-extrabold text-foreground">{playlist.name}</h1>
-          <p className="text-muted-foreground mt-2">{playlist.description}</p>
+          {playlist.description && <p className="text-muted-foreground mt-2 text-sm">{playlist.description}</p>}
         </div>
       </div>
       
