@@ -9,8 +9,8 @@ export interface AffiliateAd {
     price?: string;
   }
   
-  // Anúncios para o banner superior (TimedAd)
-  export const timedAds: AffiliateAd[] = [
+  // Anúncios para o banner inferior (AffiliateAd)
+  export const affiliateAds: AffiliateAd[] = [
     {
       id: 'ad-top-1',
       imageUrl: 'https://ae-pic-a1.aliexpress-media.com/kf/S2a797cbd3a004b5cb4f0897b2793cb9ef.png',
@@ -28,10 +28,6 @@ export interface AffiliateAd {
       source: 'AliExpress',
       price: 'US$ 0.99',
     },
-  ];
-  
-  // Anúncios para o banner inferior (AffiliateAd)
-  export const affiliateAds: AffiliateAd[] = [
     {
       id: '1',
       imageUrl: 'https://ae01.alicdn.com/kf/S8b762365b4f14e179ae3098dee3bd9582.jpg',

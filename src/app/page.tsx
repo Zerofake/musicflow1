@@ -14,7 +14,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { TimedAd } from '@/components/TimedAd';
 
 export default function PlaylistsPage() {
   const { playlists, canCreatePlaylist } = useMusic();
@@ -31,8 +30,6 @@ export default function PlaylistsPage() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Playlists</h1>
       </div>
-
-      <TimedAd />
 
       <div className="flex justify-between items-center mb-6 mt-4">
           <h2 className="text-xl font-semibold">Suas Playlists</h2>
