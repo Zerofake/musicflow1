@@ -5,6 +5,7 @@ import { MusicPlayer } from '@/components/MusicPlayer';
 import { BottomNavBar } from '@/components/BottomNavBar';
 import { useMusic } from '@/hooks/useMusic';
 import { AffiliateAd } from '@/components/AffiliateAd';
+import { PixDonation } from './PixDonation';
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const { currentSong } = useMusic();
@@ -19,8 +20,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       
       {currentSong && <MusicPlayer />}
       
-      <div className="absolute bottom-24 left-4 right-4 z-10">
+      <div className="absolute bottom-24 left-4 right-4 z-10 flex flex-col gap-2">
         <AffiliateAd />
+        <PixDonation />
       </div>
       
       <BottomNavBar />
