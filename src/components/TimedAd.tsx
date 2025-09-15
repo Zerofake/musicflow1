@@ -92,12 +92,11 @@ export function TimedAd() {
   return (
     <div className="relative w-full mb-4 group">
       <Link href={ad.link} target="_blank" rel="noopener noreferrer">
-        <div className="relative overflow-hidden rounded-lg">
+        <div className="relative overflow-hidden rounded-lg aspect-[8/1] w-full bg-muted">
           <Image
             src={ad.imageUrl}
             alt={ad.title}
-            width={725}
-            height={90}
+            fill
             className="object-cover w-full h-auto"
             data-ai-hint="advertisement banner"
           />
