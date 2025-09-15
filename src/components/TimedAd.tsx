@@ -1,9 +1,10 @@
+
 "use client";
 
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { affiliateAds } from '@/lib/affiliate-ads';
+import { timedAds } from '@/lib/affiliate-ads';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -33,12 +34,12 @@ export function TimedAd() {
 
   // Efeito para a rotação de anúncios
   useEffect(() => {
-    if (affiliateAds.length <= 1 || !isVisible) return;
+    if (timedAds.length <= 1 || !isVisible) return;
 
     const interval = setInterval(() => {
       setIsTransitioning(true);
       setTimeout(() => {
-        setCurrentAdIndex((prevIndex) => (prevIndex + 1) % affiliateAds.length);
+        setCurrentAdIndex((prevIndex) => (prevIndex + 1) % timedAds.length);
         setIsTransitioning(false);
       }, 500); // Duração da animação de saída
     }, AD_ROTATION_INTERVAL);
@@ -62,11 +63,11 @@ export function TimedAd() {
     return null;
   }
   
-  if (affiliateAds.length === 0) {
+  if (timedAds.length === 0) {
     return null;
   }
 
-  const ad = affiliateAds[currentAdIndex];
+  const ad = timedAds[currentAdIndex];
 
   return (
     <div className="w-full">
@@ -84,7 +85,7 @@ export function TimedAd() {
             >
               <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-md bg-muted">
                 <Image
-                  src={ad.imageUrl}
+                  src={ad.imageUrl.startsWith('//') ? `https:${ad.imageUrl}` : ad.imageUrl}
                   alt={ad.title}
                   fill
                   className="object-cover transition-transform group-hover:scale-105"
@@ -120,3 +121,4 @@ export function TimedAd() {
     </div>
   );
 }
+
