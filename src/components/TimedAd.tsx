@@ -19,7 +19,21 @@ export function TimedAd() {
   const [currentAdIndex, setCurrentAdIndex] = useState(0);
   const reappearTimer = useRef<NodeJS.Timeout | null>(null);
 
-  // Efeito para mostrar o anúncio inicial e configurar o reaparecimento
+  const handleClose = (e: React.MouseEvent) => {
+    e.preventDefault(); // Impede a navegação do link
+    e.stopPropagation(); // Impede a propagação do evento de clique
+
+    if (canClose) {
+      setIsVisible(false);
+      localStorage.setItem('adLastClosedTime', new Date().getTime().toString());
+      
+      if (reappearTimer.current) clearTimeout(reappearTimer.current);
+      reappearTimer.current = setTimeout(() => {
+        setIsVisible(true);
+      }, AD_REAPPEAR_INTERVAL);
+    }
+  };
+
   useEffect(() => {
     const showAd = () => {
       const lastClosedTime = localStorage.getItem('adLastClosedTime');
@@ -27,11 +41,8 @@ export function TimedAd() {
 
       if (!lastClosedTime || (now - Number(lastClosedTime) > AD_REAPPEAR_INTERVAL)) {
         setIsVisible(true);
-        setCanClose(false); // Reseta a permissão para fechar
       } else {
-        // Se já foi fechado, esconde
         setIsVisible(false);
-        // E agenda a próxima verificação
         const timeUntilReappear = AD_REAPPEAR_INTERVAL - (now - Number(lastClosedTime));
         if (reappearTimer.current) clearTimeout(reappearTimer.current);
         reappearTimer.current = setTimeout(showAd, timeUntilReappear);
@@ -45,20 +56,20 @@ export function TimedAd() {
     };
   }, []);
 
-  // Efeito para habilitar o botão de fechar após 15 segundos
   useEffect(() => {
-    let closeTimer: NodeJS.Timeout;
+    let closeTimer: NodeJS.Timeout | null = null;
     if (isVisible) {
-      setCanClose(false); // Garante que canClose seja falso no início
+      setCanClose(false);
       closeTimer = setTimeout(() => {
         setCanClose(true);
       }, CLOSE_BUTTON_DELAY);
     }
-    return () => clearTimeout(closeTimer);
-  }, [isVisible, currentAdIndex]); // Roda sempre que o anúncio se torna visível ou muda
+    return () => {
+      if (closeTimer) clearTimeout(closeTimer);
+    };
+  }, [isVisible, currentAdIndex]);
 
 
-  // Efeito para rotacionar os anúncios
   useEffect(() => {
     if (!isVisible || timedAds.length <= 1) return;
 
@@ -69,19 +80,6 @@ export function TimedAd() {
     return () => clearInterval(rotationInterval);
   }, [isVisible]);
 
-  const handleClose = () => {
-    if (canClose) {
-      setIsVisible(false);
-      localStorage.setItem('adLastClosedTime', new Date().getTime().toString());
-      
-      // Agenda a próxima verificação para reaparecimento
-      if (reappearTimer.current) clearTimeout(reappearTimer.current);
-      reappearTimer.current = setTimeout(() => {
-        setIsVisible(true);
-        setCanClose(false);
-      }, AD_REAPPEAR_INTERVAL);
-    }
-  };
 
   if (!isVisible || timedAds.length === 0) {
     return null;
@@ -90,8 +88,8 @@ export function TimedAd() {
   const ad = timedAds[currentAdIndex];
 
   return (
-    <div className="relative w-full mb-4 group">
-      <Link href={ad.link} target="_blank" rel="noopener noreferrer">
+    <div className="relative w-full mb-4">
+      <Link href={ad.link} target="_blank" rel="noopener noreferrer" className="block relative group">
         <div className="relative overflow-hidden rounded-lg aspect-[8/1] w-full bg-muted">
           <Image
             src={ad.imageUrl}
@@ -101,20 +99,20 @@ export function TimedAd() {
             data-ai-hint="advertisement banner"
           />
         </div>
+         <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleClose}
+            disabled={!canClose}
+            className={cn(
+              "absolute top-1 right-1 h-6 w-6 bg-black/50 hover:bg-black/70 text-white rounded-full z-10",
+              !canClose && "cursor-not-allowed opacity-50"
+            )}
+            aria-label="Fechar anúncio"
+          >
+            <X className="h-4 w-4" />
+          </Button>
       </Link>
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={handleClose}
-        disabled={!canClose}
-        className={cn(
-          "absolute top-1 right-1 h-6 w-6 bg-black/50 hover:bg-black/70 text-white rounded-full z-10",
-          !canClose && "cursor-not-allowed opacity-50"
-        )}
-        aria-label="Fechar anúncio"
-      >
-        <X className="h-4 w-4" />
-      </Button>
     </div>
   );
 }
