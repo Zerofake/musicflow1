@@ -22,6 +22,15 @@ export interface AffiliateAd {
       price: 'R$ 59,19',
     },
     {
+      id: '2',
+      imageUrl: 'https://ae01.alicdn.com/kf/S6694cea45c4648d689341a588ef5e4ec4.jpg',
+      title: 'Brinquedo Lançador de Foguete',
+      description: 'Diversão ao ar livre para crianças.',
+      link: 'https://s.click.aliexpress.com/e/_oC35JBf',
+      source: 'AliExpress',
+      price: '$0.99',
+    },
+    {
       id: '6',
       imageUrl: 'https://ae01.alicdn.com/kf/S4c8e71805ac24d9cb113515ed64883a7Y.jpg',
       title: 'Robô 3D com múltiplas articulações e mudança de forma móvel',
