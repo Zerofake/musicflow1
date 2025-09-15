@@ -14,7 +14,7 @@ const CLOSE_BUTTON_DELAY = 15 * 1000; // 15 segundos
 const AD_ROTATION_INTERVAL = 10 * 1000; // 10 segundos para rotacionar
 
 export function TimedAd() {
-  const [isVisible, setIsVisible] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
   const [canClose, setCanClose] = useState(false);
   const [currentAdIndex, setCurrentAdIndex] = useState(0);
   const reappearTimer = useRef<NodeJS.Timeout | null>(null);
@@ -29,14 +29,16 @@ export function TimedAd() {
         setIsVisible(true);
         setCanClose(false); // Reseta a permissão para fechar
       } else {
-        // Se não for para mostrar, agenda a próxima verificação
+        // Se já foi fechado, esconde
+        setIsVisible(false);
+        // E agenda a próxima verificação
         const timeUntilReappear = AD_REAPPEAR_INTERVAL - (now - Number(lastClosedTime));
         if (reappearTimer.current) clearTimeout(reappearTimer.current);
         reappearTimer.current = setTimeout(showAd, timeUntilReappear);
       }
     };
     
-    showAd(); // Mostra o anúncio na primeira vez que o componente carrega
+    showAd();
 
     return () => {
       if (reappearTimer.current) clearTimeout(reappearTimer.current);
@@ -47,12 +49,13 @@ export function TimedAd() {
   useEffect(() => {
     let closeTimer: NodeJS.Timeout;
     if (isVisible) {
+      setCanClose(false); // Garante que canClose seja falso no início
       closeTimer = setTimeout(() => {
         setCanClose(true);
       }, CLOSE_BUTTON_DELAY);
     }
     return () => clearTimeout(closeTimer);
-  }, [isVisible]);
+  }, [isVisible, currentAdIndex]); // Roda sempre que o anúncio se torna visível ou muda
 
 
   // Efeito para rotacionar os anúncios
@@ -73,7 +76,10 @@ export function TimedAd() {
       
       // Agenda a próxima verificação para reaparecimento
       if (reappearTimer.current) clearTimeout(reappearTimer.current);
-      reappearTimer.current = setTimeout(() => setIsVisible(true), AD_REAPPEAR_INTERVAL);
+      reappearTimer.current = setTimeout(() => {
+        setIsVisible(true);
+        setCanClose(false);
+      }, AD_REAPPEAR_INTERVAL);
     }
   };
 
