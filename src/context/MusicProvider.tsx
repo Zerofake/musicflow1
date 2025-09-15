@@ -4,9 +4,7 @@ import type { Song, Playlist } from '@/lib/types';
 import { initialSongs, initialPlaylists } from '@/lib/data';
 import React, { createContext, useState, useRef, useEffect, useCallback } from 'react';
 
-const MAX_FREE_PLAYLISTS = 6;
 const MAX_TOTAL_PLAYLISTS = 12;
-const PLAYLIST_COST = 25; 
 
 interface MusicContextType {
   // Songs
@@ -35,9 +33,7 @@ interface MusicContextType {
   toggleRepeat: () => void;
   
   // Monetization
-  credits: number;
-  addCredits: (amount: number) => void;
-  canCreatePlaylist: { can: boolean; needsCredits: boolean; message: string };
+  canCreatePlaylist: { can: boolean; message: string };
 }
 
 export const MusicContext = createContext<MusicContextType | null>(null);
@@ -52,38 +48,22 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [isRepeating, setIsRepeating] = useState(false);
-  const [credits, setCredits] = useState(0);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   
-  const addCredits = useCallback((amount: number) => {
-    setCredits(prev => prev + amount);
-  }, []);
-
   const canCreatePlaylist = React.useMemo(() => {
     if (playlists.length >= MAX_TOTAL_PLAYLISTS) {
       return {
         can: false,
-        needsCredits: false,
         message: `Você atingiu o limite máximo de ${MAX_TOTAL_PLAYLISTS} playlists.`,
       };
     }
     
-    const isOverFreeLimit = playlists.length >= MAX_FREE_PLAYLISTS;
-    if (isOverFreeLimit && credits < PLAYLIST_COST) {
-        return {
-            can: false,
-            needsCredits: true,
-            message: `Custa ${PLAYLIST_COST} créditos para criar mais playlists.`
-        }
-    }
-    
     return {
         can: true,
-        needsCredits: isOverFreeLimit,
-        message: isOverFreeLimit ? `Isso custará ${PLAYLIST_COST} créditos.` : `Você pode criar mais ${MAX_FREE_PLAYLISTS - playlists.length} playlists gratuitas.`
+        message: `Você pode criar até ${MAX_TOTAL_PLAYLISTS} playlists.`
     }
-  }, [playlists.length, credits]);
+  }, [playlists.length]);
 
   const playSong = useCallback((song: Song, songQueue: Song[] = []) => {
     if (audioRef.current && audioRef.current.src && !audioRef.current.paused) {
@@ -166,10 +146,6 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
   const createPlaylist = useCallback((name: string, description: string): boolean => {
     if (!canCreatePlaylist.can || !name || name.length > 200) {
         return false;
-    }
-
-    if (canCreatePlaylist.needsCredits) {
-        setCredits(prev => prev - PLAYLIST_COST);
     }
     
     const newPlaylist: Playlist = {
@@ -290,8 +266,6 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
     seek,
     isRepeating,
     toggleRepeat,
-    credits,
-    addCredits,
     canCreatePlaylist
   };
 

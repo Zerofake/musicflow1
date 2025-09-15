@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { useMusic } from '@/hooks/useMusic';
 import { Card, CardContent } from '@/components/ui/card';
-import { Play, Plus, Coins, Info } from 'lucide-react';
+import { Play, Plus, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CreatePlaylistDialog } from '@/components/CreatePlaylistDialog';
 import {
@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/tooltip"
 
 export default function PlaylistsPage() {
-  const { playlists, canCreatePlaylist, credits } = useMusic();
+  const { playlists, canCreatePlaylist } = useMusic();
   const [dialogOpen, setDialogOpen] = useState(false);
 
   const handleCreatePlaylistClick = () => {
@@ -29,12 +29,6 @@ export default function PlaylistsPage() {
     <div className="p-4 sm:p-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Playlists</h1>
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-2 border border-yellow-500/50 bg-yellow-500/10 rounded-full px-3 py-1 text-xs sm:text-sm">
-            <Coins className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-500" />
-            <span className="font-bold text-yellow-400">{credits}</span>
-          </div>
-        </div>
       </div>
 
       <div className="flex justify-between items-center mb-6">
@@ -106,8 +100,7 @@ export default function PlaylistsPage() {
             <div>
                 <h4 className="font-semibold text-sm">Informações</h4>
                 <ul className="list-disc list-inside text-xs text-muted-foreground mt-2 space-y-1">
-                    <li>Você pode criar até 6 playlists gratuitas.</li>
-                    <li>Para criar mais 6 (total de 12), será necessário usar créditos.</li>
+                    <li>Você pode criar até 12 playlists gratuitas.</li>
                     <li>Todas as suas músicas e playlists são salvas localmente no seu dispositivo.</li>
                 </ul>
             </div>

@@ -45,13 +45,6 @@ export function CreatePlaylistDialog({ open, onOpenChange }: { open: boolean, on
     }
   };
 
-  const getButtonText = () => {
-    if (canCreatePlaylist.needsCredits) {
-      return `Criar (Custo: 25 créditos)`;
-    }
-    return "Criar Playlist";
-  };
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
@@ -96,7 +89,7 @@ export function CreatePlaylistDialog({ open, onOpenChange }: { open: boolean, on
                 </Button>
             </DialogClose>
           <Button onClick={handleSubmit} disabled={!canCreatePlaylist.can || !!error}>
-            {getButtonText()}
+            Criar Playlist
           </Button>
         </DialogFooter>
       </DialogContent>
