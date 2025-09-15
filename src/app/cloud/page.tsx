@@ -2,6 +2,7 @@
 
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Check } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const plans = [
     {
@@ -59,13 +60,14 @@ export default function CloudPage() {
                                         <Check className="h-4 w-4 text-green-500" />
                                         <span>{feature}</span>
                                     </li>
+
                                 ))}
                             </ul>
                         </CardContent>
                         <CardFooter>
-                            <div className="w-full text-center text-sm font-medium text-muted-foreground/80 py-2">
-                                Em Breve
-                            </div>
+                            <Button disabled className="w-full">
+                                Escolher Plano (Em Breve)
+                            </Button>
                         </CardFooter>
                     </Card>
                 ))}
