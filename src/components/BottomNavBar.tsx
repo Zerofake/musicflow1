@@ -8,7 +8,6 @@ import { LogoIcon } from "@/components/icons/LogoIcon";
 
 const navItems = [
   { href: "/", label: "Playlists", icon: LogoIcon },
-  { href: "/songs", label: "Músicas", icon: Headphones },
 ];
 
 export function BottomNavBar() {
