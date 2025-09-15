@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -14,69 +13,71 @@ const CLOSE_BUTTON_DELAY = 15 * 1000; // 15 segundos
 const AD_ROTATION_INTERVAL = 10 * 1000; // 10 segundos para rotacionar
 
 export function TimedAd() {
-  const [isVisible, setIsVisible] = useState(true);
+  const [isVisible, setIsVisible] = useState(false); // Começa invisível e é controlado pelo useEffect
   const [canClose, setCanClose] = useState(false);
   const [currentAdIndex, setCurrentAdIndex] = useState(0);
   const reappearTimer = useRef<NodeJS.Timeout | null>(null);
 
   const handleClose = () => {
-    if (canClose) {
-      setIsVisible(false);
-      localStorage.setItem('adLastClosedTime', new Date().getTime().toString());
-      
-      if (reappearTimer.current) clearTimeout(reappearTimer.current);
-      reappearTimer.current = setTimeout(() => {
-        setIsVisible(true);
-      }, AD_REAPPEAR_INTERVAL);
-    }
+    setIsVisible(false);
+    localStorage.setItem('adLastClosedTime', new Date().getTime().toString());
+    
+    if (reappearTimer.current) clearTimeout(reappearTimer.current);
+
+    reappearTimer.current = setTimeout(() => {
+      setIsVisible(true);
+    }, AD_REAPPEAR_INTERVAL);
   };
 
+  // Efeito para controlar a aparição inicial do anúncio
   useEffect(() => {
-    const showAd = () => {
-      const lastClosedTime = localStorage.getItem('adLastClosedTime');
-      const now = new Date().getTime();
+    const lastClosedTime = localStorage.getItem('adLastClosedTime');
+    if (!lastClosedTime) {
+      setIsVisible(true);
+      return;
+    }
 
-      if (!lastClosedTime || (now - Number(lastClosedTime) > AD_REAPPEAR_INTERVAL)) {
-        setIsVisible(true);
-      } else {
-        setIsVisible(false);
-        const timeUntilReappear = AD_REAPPEAR_INTERVAL - (now - Number(lastClosedTime));
-        if (reappearTimer.current) clearTimeout(reappearTimer.current);
-        reappearTimer.current = setTimeout(showAd, timeUntilReappear);
-      }
-    };
-    
-    showAd();
+    const now = new Date().getTime();
+    const timeSinceClosed = now - Number(lastClosedTime);
+
+    if (timeSinceClosed >= AD_REAPPEAR_INTERVAL) {
+      setIsVisible(true);
+    } else {
+      const timeUntilReappear = AD_REAPPEAR_INTERVAL - timeSinceClosed;
+      if (reappearTimer.current) clearTimeout(reappearTimer.current);
+      reappearTimer.current = setTimeout(() => setIsVisible(true), timeUntilReappear);
+    }
 
     return () => {
       if (reappearTimer.current) clearTimeout(reappearTimer.current);
     };
   }, []);
 
+  // Efeito para controlar o botão de fechar e a rotação de anúncios
   useEffect(() => {
     let closeTimer: NodeJS.Timeout | null = null;
+    let rotationInterval: NodeJS.Timeout | null = null;
+
     if (isVisible) {
-      setCanClose(false);
+      // Reseta `canClose` e o temporizador toda vez que o anúncio se torna visível
+      setCanClose(false); 
       closeTimer = setTimeout(() => {
         setCanClose(true);
       }, CLOSE_BUTTON_DELAY);
+
+      // Inicia a rotação de anúncios
+      if (timedAds.length > 1) {
+        rotationInterval = setInterval(() => {
+          setCurrentAdIndex((prevIndex) => (prevIndex + 1) % timedAds.length);
+        }, AD_ROTATION_INTERVAL);
+      }
     }
+
     return () => {
       if (closeTimer) clearTimeout(closeTimer);
+      if (rotationInterval) clearInterval(rotationInterval);
     };
-  }, [isVisible, currentAdIndex]);
-
-
-  useEffect(() => {
-    if (!isVisible || timedAds.length <= 1) return;
-
-    const rotationInterval = setInterval(() => {
-        setCurrentAdIndex((prevIndex) => (prevIndex + 1) % timedAds.length);
-    }, AD_ROTATION_INTERVAL);
-
-    return () => clearInterval(rotationInterval);
-  }, [isVisible]);
-
+  }, [isVisible, currentAdIndex]); // Re-executa se o anúncio visível mudar
 
   if (!isVisible || timedAds.length === 0) {
     return null;
@@ -94,6 +95,7 @@ export function TimedAd() {
             fill
             className="object-cover"
             data-ai-hint="advertisement banner"
+            priority
           />
         </div>
       </Link>
@@ -113,4 +115,3 @@ export function TimedAd() {
     </div>
   );
 }
-
