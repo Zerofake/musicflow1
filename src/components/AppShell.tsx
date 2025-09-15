@@ -9,7 +9,7 @@ import { AffiliateAd } from '@/components/AffiliateAd';
 export function AppShell({ children }: { children: React.ReactNode }) {
   const { currentSong } = useMusic();
 
-  const paddingBottom = currentSong ? 'pb-52' : 'pb-24';
+  const paddingBottom = currentSong ? 'pb-56' : 'pb-40';
 
   return (
     <div className="relative mx-auto flex h-dvh w-full flex-col overflow-hidden bg-background shadow-2xl md:max-w-[450px] md:border-4 md:border-neutral-800 md:rounded-3xl md:max-h-[950px]">
