@@ -1,4 +1,5 @@
 
+
 export interface AffiliateAd {
     id: string;
     imageUrl: string;
@@ -8,6 +9,27 @@ export interface AffiliateAd {
     source: 'AliExpress' | 'Shopee';
     price?: string;
   }
+  
+  // Anúncios para o banner superior (TimedAd)
+  export const timedAds: AffiliateAd[] = [
+    {
+        id: 'timed-1',
+        imageUrl: 'https://ae-pic-a1.aliexpress-media.com/kf/S2a797cbd3a004b5cb4f0897b2793cb9ef.png',
+        title: 'Oferta Especial',
+        description: 'Clique para conferir!',
+        link: 'https://s.click.aliexpress.com/e/_oDGZedf?bz=300*250',
+        source: 'AliExpress'
+      },
+      {
+        id: 'timed-2',
+        imageUrl: 'https://ae01.alicdn.com/kf/S6694cea45c4648d689341a588ef5e4ec4.jpg_80x80.jpg',
+        title: 'Brinquedo Lançador de Foguete',
+        description: 'Diversão garantida para as crianças.',
+        link: 'https://s.click.aliexpress.com/e/_oC35JBf',
+        source: 'AliExpress',
+        price: 'US$ 0.99',
+      },
+  ];
   
   // Anúncios para o banner inferior (AffiliateAd)
   export const affiliateAds: AffiliateAd[] = [
@@ -19,6 +41,15 @@ export interface AffiliateAd {
       link: 'https://s.click.aliexpress.com/e/_oC7iRRV',
       source: 'AliExpress',
       price: 'R$ 59,19',
+    },
+    {
+        id: '2',
+        imageUrl: 'https://ae01.alicdn.com/kf/S6694cea45c4648d689341a588ef5e4ec4.jpg_80x80.jpg',
+        title: 'Brinquedo Lançador de Foguete',
+        description: 'Diversão garantida para as crianças.',
+        link: 'https://s.click.aliexpress.com/e/_oC35JBf',
+        source: 'AliExpress',
+        price: 'US$ 0.99',
     },
     {
       id: '6',
@@ -130,7 +161,7 @@ export interface AffiliateAd {
       imageUrl: 'https://ae01.alicdn.com/kf/S9f99fa86c441476291de741538490309f.jpg',
       title: 'Imã de Geladeira Solo Leveling',
       description: 'Anime Sung Jin-Woo Cosplay 58mm',
-      link: 'https://s.click.aliexpress.com/e/_oDWcpx9',
+      link: 'https://s.click.aliexpress.com/e/_oDWcpx19',
       source: 'AliExpress',
       price: 'US $0.96',
     },
