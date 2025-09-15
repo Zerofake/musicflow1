@@ -12,23 +12,6 @@ export interface AffiliateAd {
   // Anúncios para o banner inferior (AffiliateAd)
   export const affiliateAds: AffiliateAd[] = [
     {
-      id: 'ad-top-1',
-      imageUrl: 'https://ae-pic-a1.aliexpress-media.com/kf/S2a797cbd3a004b5cb4f0897b2793cb9ef.png',
-      title: 'Confira esta Oferta',
-      description: 'Clique para ver mais detalhes',
-      link: 'https://s.click.aliexpress.com/e/_oorQon3',
-      source: 'AliExpress',
-    },
-    {
-      id: 'ad-top-2',
-      imageUrl: '//ae01.alicdn.com/kf/S6694cea45c4648d689341a588ef5e4ec4.jpg_350x350.jpg',
-      title: 'Brinquedo Lançador de Foguete',
-      description: 'Diversão ao ar livre para crianças.',
-      link: 'https://s.click.aliexpress.com/e/_oC35JBf',
-      source: 'AliExpress',
-      price: 'US$ 0.99',
-    },
-    {
       id: '1',
       imageUrl: 'https://ae01.alicdn.com/kf/S8b762365b4f14e179ae3098dee3bd9582.jpg',
       title: 'Tênis de Corrida Feminino',
