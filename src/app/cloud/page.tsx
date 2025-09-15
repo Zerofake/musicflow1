@@ -1,7 +1,6 @@
 "use client";
 
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
 
 const plans = [
@@ -64,9 +63,9 @@ export default function CloudPage() {
                             </ul>
                         </CardContent>
                         <CardFooter>
-                            <Button className="w-full" disabled>
-                                Escolher Plano (Em Breve)
-                            </Button>
+                            <div className="w-full text-center text-sm font-medium text-muted-foreground/80 py-2">
+                                Em Breve
+                            </div>
                         </CardFooter>
                     </Card>
                 ))}
