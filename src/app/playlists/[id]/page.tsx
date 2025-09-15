@@ -3,11 +3,11 @@
 
 import Image from 'next/image';
 import { notFound, useRouter, useParams } from 'next/navigation';
-import React, { useState, useRef, useCallback, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useMusic } from '@/hooks/useMusic';
 import { SongItem } from '@/components/SongItem';
 import { Button } from '@/components/ui/button';
-import { MoreVertical, Trash2, ArrowLeft } from 'lucide-react';
+import { MoreVertical, Trash2, ArrowLeft, Edit } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,19 +24,37 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+    DialogFooter,
+    DialogClose
+  } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import type { Song } from '@/lib/types';
 
 export default function PlaylistDetailPage() {
   const params = useParams();
+  const playlistId = typeof params.id === 'string' ? params.id : '';
   const { playlists, songs, deletePlaylist, updatePlaylist } = useMusic();
   const router = useRouter();
-  const playlist = playlists.find((p) => p.id === params.id);
+  
+  const playlist = playlists.find((p) => p.id === playlistId);
   
   const [playlistSongs, setPlaylistSongs] = useState<Song[]>([]);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editedName, setEditedName] = useState(playlist?.name || '');
+  const [editedDescription, setEditedDescription] = useState(playlist?.description || '');
   
   useEffect(() => {
     if (playlist) {
+      setEditedName(playlist.name);
+      setEditedDescription(playlist.description || '');
       const mappedSongs = playlist.songIds
         .map((songId) => songs.find((s) => s.id === songId))
         .filter(Boolean) as Song[];
@@ -56,7 +74,7 @@ export default function PlaylistDetailPage() {
   };
 
   const handleDragEnd = () => {
-    if (dragItem.current && dragOverItem.current && dragItem.current !== dragOverItem.current && typeof params.id === 'string') {
+    if (dragItem.current && dragOverItem.current && dragItem.current !== dragOverItem.current && playlistId) {
       const newSongIds = [...(playlist?.songIds || [])];
       const dragItemIndex = newSongIds.indexOf(dragItem.current);
       const dragOverItemIndex = newSongIds.indexOf(dragOverItem.current);
@@ -64,22 +82,33 @@ export default function PlaylistDetailPage() {
       const [removed] = newSongIds.splice(dragItemIndex, 1);
       newSongIds.splice(dragOverItemIndex, 0, removed);
       
-      updatePlaylist(params.id, { songIds: newSongIds });
+      updatePlaylist(playlistId, { songIds: newSongIds });
     }
     dragItem.current = null;
     dragOverItem.current = null;
   };
 
   if (!playlist) {
-    notFound();
+    // Aguarda o useEffect carregar os dados ou redireciona
+    if (playlists.length > 0) {
+        notFound();
+    }
+    return null; 
   }
   
   const handleDeletePlaylist = () => {
-    if (typeof params.id === 'string') {
-        deletePlaylist(params.id);
+    if (playlistId) {
+        deletePlaylist(playlistId);
         router.push('/');
     }
   };
+
+  const handleEditPlaylist = () => {
+    if (playlistId && editedName) {
+        updatePlaylist(playlistId, { name: editedName, description: editedDescription });
+        setIsEditDialogOpen(false);
+    }
+  }
 
   return (
     <div>
@@ -106,6 +135,10 @@ export default function PlaylistDetailPage() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
+              <DropdownMenuItem onClick={() => setIsEditDialogOpen(true)}>
+                <Edit className="mr-2 h-4 w-4" />
+                <span>Editar playlist</span>
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setIsDeleteDialogOpen(true)} className="text-destructive">
                 <Trash2 className="mr-2 h-4 w-4" />
                 <span>Excluir playlist</span>
@@ -128,7 +161,7 @@ export default function PlaylistDetailPage() {
                 key={song.id} 
                 song={song}
                 playlistSongs={playlistSongs}
-                playlistId={typeof params.id === 'string' ? params.id : undefined}
+                playlistId={playlistId}
                 draggable
                 onDragStart={handleDragStart}
                 onDragEnter={handleDragEnter}
@@ -159,6 +192,52 @@ export default function PlaylistDetailPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Editar Playlist</DialogTitle>
+            <DialogDescription>
+              Altere o nome e a descrição da sua playlist.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="name" className="text-right">
+                Nome
+              </Label>
+              <Input
+                id="name"
+                value={editedName}
+                onChange={(e) => setEditedName(e.target.value)}
+                className="col-span-3"
+                maxLength={200}
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="description" className="text-right">
+                Descrição
+              </Label>
+              <Input
+                id="description"
+                value={editedDescription}
+                onChange={(e) => setEditedDescription(e.target.value)}
+                className="col-span-3"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+              <DialogClose asChild>
+                  <Button type="button" variant="secondary">
+                      Cancelar
+                  </Button>
+              </DialogClose>
+            <Button onClick={handleEditPlaylist} disabled={!editedName}>
+              Salvar Alterações
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

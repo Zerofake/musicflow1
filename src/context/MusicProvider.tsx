@@ -6,12 +6,12 @@ import React, { createContext, useState, useRef, useEffect, useCallback } from '
 
 const MAX_FREE_PLAYLISTS = 6;
 const MAX_TOTAL_PLAYLISTS = 12;
-const PLAYLIST_COST = 25; // Custo em créditos para criar uma playlist
-const MAX_STORAGE_MB = 500; 
+const PLAYLIST_COST = 25; 
 
 interface MusicContextType {
   // Songs
   songs: Song[];
+  deleteSong: (songId: string) => void;
   
   // Playlists
   playlists: Playlist[];
@@ -34,17 +34,13 @@ interface MusicContextType {
   isRepeating: boolean;
   toggleRepeat: () => void;
   
-  // Monetization & Storage
+  // Monetization
   credits: number;
   addCredits: (amount: number) => void;
   canCreatePlaylist: { can: boolean; needsCredits: boolean; message: string };
-  totalStorageUsed: number;
 }
 
 export const MusicContext = createContext<MusicContextType | null>(null);
-
-// Simula um tamanho médio em MB para cada música, já que não temos o tamanho real
-const getSimulatedSongSize = (duration: number) => (duration / 60) * 4;
 
 export function MusicProvider({ children }: { children: React.ReactNode }) {
   const [songs, setSongs] = useState<Song[]>(initialSongs);
@@ -60,10 +56,6 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   
-  const totalStorageUsed = React.useMemo(() => {
-    return songs.reduce((acc, song) => acc + getSimulatedSongSize(song.duration), 0);
-  }, [songs]);
-  
   const addCredits = useCallback((amount: number) => {
     setCredits(prev => prev + amount);
   }, []);
@@ -75,15 +67,6 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
         needsCredits: false,
         message: `Você atingiu o limite máximo de ${MAX_TOTAL_PLAYLISTS} playlists.`,
       };
-    }
-
-    const isOverStorageLimit = totalStorageUsed >= MAX_STORAGE_MB;
-    if (isOverStorageLimit) {
-        return {
-            can: false,
-            needsCredits: false,
-            message: `Você atingiu o limite de ${MAX_STORAGE_MB}MB. Considere um plano de nuvem.`
-        }
     }
     
     const isOverFreeLimit = playlists.length >= MAX_FREE_PLAYLISTS;
@@ -100,7 +83,7 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
         needsCredits: isOverFreeLimit,
         message: isOverFreeLimit ? `Isso custará ${PLAYLIST_COST} créditos.` : `Você pode criar mais ${MAX_FREE_PLAYLISTS - playlists.length} playlists gratuitas.`
     }
-  }, [playlists.length, credits, totalStorageUsed]);
+  }, [playlists.length, credits]);
 
   const playSong = useCallback((song: Song, songQueue: Song[] = []) => {
     if (audioRef.current && audioRef.current.src && !audioRef.current.paused) {
@@ -111,7 +94,15 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
     
     const newQueue = songQueue.length > 0 ? songQueue : [...songs];
     setQueue(newQueue);
-    setCurrentSongIndex(newQueue.findIndex(s => s.id === song.id));
+    const songIndex = newQueue.findIndex(s => s.id === song.id);
+    setCurrentSongIndex(songIndex);
+
+    // Se a música não estiver mais na lista principal de músicas, não faz sentido tocar
+    if (songIndex === -1 && songs.findIndex(s => s.id === song.id) === -1) {
+        setCurrentSong(null);
+        setIsPlaying(false);
+        return;
+    }
 
     const audio = audioRef.current ? audioRef.current : new Audio();
     if (!audioRef.current) {
@@ -194,15 +185,7 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
 
   const deletePlaylist = useCallback((playlistId: string) => {
     setPlaylists(prev => prev.filter(p => p.id !== playlistId));
-    if (currentSong && playlists.find(p => p.id === playlistId)?.songIds.includes(currentSong.id)) {
-      if (audioRef.current) {
-        audioRef.current.pause();
-      }
-      setCurrentSong(null);
-      setIsPlaying(false);
-      setQueue([]);
-    }
-  }, [currentSong, playlists]);
+  }, []);
   
   const updatePlaylist = useCallback((playlistId: string, data: Partial<Omit<Playlist, 'id'>>) => {
     setPlaylists(prev => prev.map(p => p.id === playlistId ? { ...p, ...data } : p));
@@ -225,6 +208,45 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
       return p;
     }));
   }, []);
+  
+  const deleteSong = useCallback((songId: string) => {
+    // 1. Remove song from all playlists
+    setPlaylists(prev => 
+      prev.map(p => ({
+        ...p,
+        songIds: p.songIds.filter(id => id !== songId)
+      }))
+    );
+
+    // 2. Remove song from the main songs list
+    setSongs(prev => prev.filter(s => s.id !== songId));
+
+    // 3. Stop playback if it's the current song
+    if (currentSong?.id === songId) {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.src = '';
+      }
+      setCurrentSong(null);
+      setIsPlaying(false);
+      
+      // Update queue
+      const newQueue = queue.filter(s => s.id !== songId);
+      setQueue(newQueue);
+      
+      // Try to play the next song in the old queue's position if possible
+      if (newQueue.length > 0) {
+        const newIndex = Math.min(currentSongIndex, newQueue.length - 1);
+        playSong(newQueue[newIndex], newQueue);
+      } else {
+        setQueue([]);
+        setCurrentSongIndex(-1);
+      }
+    } else {
+      // Just update the queue if the deleted song was in it
+      setQueue(prev => prev.filter(s => s.id !== songId));
+    }
+  }, [currentSong, queue, currentSongIndex, playSong]);
 
   const playPrev = useCallback(() => {
     if (queue.length === 0) return;
@@ -250,6 +272,7 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
 
   const value = {
     songs,
+    deleteSong,
     playlists,
     createPlaylist,
     deletePlaylist,
@@ -269,8 +292,7 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
     toggleRepeat,
     credits,
     addCredits,
-    canCreatePlaylist,
-    totalStorageUsed
+    canCreatePlaylist
   };
 
   return (

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { useMusic } from '@/hooks/useMusic';
 import { Card, CardContent } from '@/components/ui/card';
-import { Play, Plus, Coins, HardDrive, Info } from 'lucide-react';
+import { Play, Plus, Coins, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CreatePlaylistDialog } from '@/components/CreatePlaylistDialog';
 import {
@@ -16,20 +16,13 @@ import {
 } from "@/components/ui/tooltip"
 
 export default function PlaylistsPage() {
-  const { playlists, canCreatePlaylist, credits, totalStorageUsed } = useMusic();
+  const { playlists, canCreatePlaylist, credits } = useMusic();
   const [dialogOpen, setDialogOpen] = useState(false);
 
   const handleCreatePlaylistClick = () => {
     if (canCreatePlaylist.can) {
       setDialogOpen(true);
     }
-  }
-
-  const formatStorage = (mb: number) => {
-    if (mb < 1024) {
-      return `${mb.toFixed(1)} MB`;
-    }
-    return `${(mb / 1024).toFixed(2)} GB`;
   }
   
   return (
@@ -41,15 +34,11 @@ export default function PlaylistsPage() {
             <Coins className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-500" />
             <span className="font-bold text-yellow-400">{credits}</span>
           </div>
-          <div className="flex items-center gap-2 border border-cyan-500/50 bg-cyan-500/10 rounded-full px-3 py-1 text-xs sm:text-sm">
-            <HardDrive className="h-4 w-4 sm:h-5 sm:w-5 text-cyan-500" />
-            <span className="font-bold text-cyan-400">{formatStorage(totalStorageUsed)}</span>
-          </div>
         </div>
       </div>
 
       <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-semibold">Suas Playlists (Local)</h2>
+          <h2 className="text-xl font-semibold">Suas Playlists</h2>
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -69,48 +58,57 @@ export default function PlaylistsPage() {
 
       <CreatePlaylistDialog open={dialogOpen} onOpenChange={setDialogOpen} />
       
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-        {playlists.map((playlist) => (
-          <Link href={`/playlists/${playlist.id}`} key={playlist.id} className="group relative">
-            <Card className="overflow-hidden border-2 border-transparent group-hover:border-primary transition-colors">
-              <CardContent className="p-0">
-                <div className="aspect-square relative">
-                  <Image
-                    src={playlist.coverArt}
-                    alt={`Capa da playlist ${playlist.name}`}
-                    fill
-                    className="object-cover transition-transform group-hover:scale-105"
-                    data-ai-hint="music playlist cover"
-                    priority={playlist.id === '1' || playlist.id === '2'}
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
-                  <div className="absolute bottom-2 left-3">
-                    <h3 className="font-bold text-white">{playlist.name}</h3>
-                    <p className="text-xs text-neutral-300">{playlist.songIds.length} músicas</p>
+      {playlists.length > 0 ? (
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+          {playlists.map((playlist) => (
+            <Link href={`/playlists/${playlist.id}`} key={playlist.id} className="group relative">
+              <Card className="overflow-hidden border-2 border-transparent group-hover:border-primary transition-colors">
+                <CardContent className="p-0">
+                  <div className="aspect-square relative">
+                    <Image
+                      src={playlist.coverArt}
+                      alt={`Capa da playlist ${playlist.name}`}
+                      fill
+                      className="object-cover transition-transform group-hover:scale-105"
+                      data-ai-hint="music playlist cover"
+                      priority={playlist.id === '1' || playlist.id === '2'}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+                    <div className="absolute bottom-2 left-3">
+                      <h3 className="font-bold text-white">{playlist.name}</h3>
+                      <p className="text-xs text-neutral-300">{playlist.songIds.length} músicas</p>
+                    </div>
                   </div>
+                </CardContent>
+              </Card>
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="bg-primary p-3 rounded-full shadow-lg">
+                  <Play className="h-6 w-6 text-primary-foreground fill-primary-foreground" />
                 </div>
-              </CardContent>
-            </Card>
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
-              <div className="bg-primary p-3 rounded-full shadow-lg">
-                <Play className="h-6 w-6 text-primary-foreground fill-primary-foreground" />
               </div>
-            </div>
-          </Link>
-        ))}
-      </div>
+            </Link>
+          ))}
+        </div>
+      ) : (
+        <Card className="mt-8 bg-muted/30 border-dashed">
+            <CardContent className="p-6 text-center">
+                <Info className="h-8 w-8 text-muted-foreground mx-auto mb-3" />
+                <h3 className="font-semibold">Nenhuma playlist encontrada</h3>
+                <p className="text-sm text-muted-foreground mt-1">Crie sua primeira playlist para começar a organizar suas músicas.</p>
+            </CardContent>
+        </Card>
+      )}
 
       <Card className="mt-8 bg-muted/30 border-dashed">
         <CardContent className="p-4">
           <div className="flex items-start gap-3">
             <Info className="h-5 w-5 text-muted-foreground flex-shrink-0 mt-0.5" />
             <div>
-                <h4 className="font-semibold text-sm">Informações Importantes</h4>
+                <h4 className="font-semibold text-sm">Informações</h4>
                 <ul className="list-disc list-inside text-xs text-muted-foreground mt-2 space-y-1">
                     <li>Você pode criar até 6 playlists gratuitas.</li>
                     <li>Para criar mais 6 (total de 12), será necessário usar créditos.</li>
                     <li>Todas as suas músicas e playlists são salvas localmente no seu dispositivo.</li>
-                    <li>Para salvar na nuvem e acessar de qualquer lugar, conheça nossos <Link href="/cloud" className="text-primary underline">Planos de Nuvem</Link>.</li>
                 </ul>
             </div>
           </div>

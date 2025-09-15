@@ -1,7 +1,7 @@
 "use client";
 
 import Image from 'next/image';
-import { Play, GripVertical, PlusCircle, MinusCircle, Music, Pause } from 'lucide-react';
+import { Play, GripVertical, PlusCircle, MinusCircle, Music, Pause, Trash2 } from 'lucide-react';
 import { useMusic } from '@/hooks/useMusic';
 import type { Song } from '@/lib/types';
 import { cn } from '@/lib/utils';
@@ -14,8 +14,19 @@ import {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 interface SongItemProps {
   song: Song;
@@ -29,14 +40,13 @@ interface SongItemProps {
 }
 
 export function SongItem({ song, playlistSongs, playlistId, draggable = false, ...dragProps }: SongItemProps) {
-  const { playSong, currentSong, isPlaying, togglePlay, playlists, addSongToPlaylist, removeSongFromPlaylist } = useMusic();
+  const { playSong, currentSong, isPlaying, togglePlay, playlists, addSongToPlaylist, removeSongFromPlaylist, deleteSong } = useMusic();
   const isActive = currentSong?.id === song.id;
   
   const [duration, setDuration] = useState(song.duration);
-  const audioRef = useRef<HTMLAudioElement>();
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   useEffect(() => {
-    // A duração agora é definida no MusicProvider
     setDuration(song.duration);
   }, [song.duration]);
 
@@ -59,6 +69,11 @@ export function SongItem({ song, playlistSongs, playlistId, draggable = false, .
     }
   };
 
+  const handleDeleteSong = () => {
+    deleteSong(song.id);
+    setIsDeleteDialogOpen(false);
+  }
+
   const formatTime = (seconds: number) => {
     if (isNaN(seconds) || seconds < 0) return '0:00';
     const minutes = Math.floor(seconds / 60);
@@ -67,6 +82,7 @@ export function SongItem({ song, playlistSongs, playlistId, draggable = false, .
   };
 
   return (
+    <>
     <div
       draggable={draggable}
       onDragStart={(e) => dragProps.onDragStart?.(e, song.id)}
@@ -123,7 +139,7 @@ export function SongItem({ song, playlistSongs, playlistId, draggable = false, .
             <DropdownMenuPortal>
               <DropdownMenuSubContent>
                 {playlists.map((p) => (
-                  <DropdownMenuItem key={p.id} onClick={() => handleAddSongToPlaylist(p.id)}>
+                  <DropdownMenuItem key={p.id} onClick={() => handleAddSongToPlaylist(p.id)} disabled={p.songIds.includes(song.id)}>
                     {p.name}
                   </DropdownMenuItem>
                 ))}
@@ -131,13 +147,36 @@ export function SongItem({ song, playlistSongs, playlistId, draggable = false, .
             </DropdownMenuPortal>
           </DropdownMenuSub>
           {playlistId && (
-            <DropdownMenuItem onClick={handleRemoveSongFromPlaylist} className="text-destructive">
+            <DropdownMenuItem onClick={handleRemoveSongFromPlaylist}>
               <MinusCircle className="mr-2 h-4 w-4" />
               <span>Remover da playlist</span>
             </DropdownMenuItem>
           )}
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={() => setIsDeleteDialogOpen(true)} className="text-destructive">
+            <Trash2 className="mr-2 h-4 w-4" />
+            Excluir música
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
+
+    <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir Música?</AlertDialogTitle>
+            <AlertDialogDescription>
+              A música "{song.title}" será removida do aplicativo e de todas as playlists. Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteSong} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }
