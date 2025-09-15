@@ -28,6 +28,12 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'ae-pic-a1.aliexpress-media.com',
+        port: '',
+        pathname: '/**',
+      }
     ],
   },
 };

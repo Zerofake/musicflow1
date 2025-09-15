@@ -9,13 +9,9 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import type { AffiliateAd } from '@/lib/affiliate-ads';
 
-const ad: AffiliateAd = {
-    id: 'timed-ad-1',
-    imageUrl: 'https://ae01.alicdn.com/kf/Sff02da080ee1493cbe4f5b1803d7af18L.jpg',
-    title: 'Nova Oferta Imperdível',
-    description: 'Produtos selecionados para você.',
-    link: 'https://s.click.aliexpress.com/e/_okAkbFN',
-    source: 'AliExpress',
+const ad = {
+    link: 'https://s.click.aliexpress.com/e/_oorQon3?bz=300*250',
+    imageUrl: 'https://ae-pic-a1.aliexpress-media.com/kf/S2a797cbd3a004b5cb4f0897b2793cb9ef.png'
 };
 
 const CLOSE_DELAY = 15000; // 15 segundos
@@ -54,38 +50,29 @@ export function TimedAd() {
     <div className="w-full group">
        <div
           className={cn(
-            "relative flex items-center gap-3 w-full rounded-lg bg-card/80 backdrop-blur-xl p-2 border border-border shadow-md transition-all duration-300 ease-in-out"
+            "relative w-full rounded-lg bg-card/80 backdrop-blur-xl p-0 border border-border shadow-md transition-all duration-300 ease-in-out"
           )}
         >
-        <Link href={ad.link} target="_blank" rel="noopener noreferrer" className="flex-1 flex items-center gap-3">
-          <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-md bg-muted">
+        <Link href={ad.link} target="_blank" rel="noopener noreferrer" className="block w-full h-[90px] relative overflow-hidden rounded-lg">
             <Image
               src={ad.imageUrl}
-              alt={ad.title}
-              fill
-              className="object-cover transition-transform group-hover:scale-105"
-              data-ai-hint="product image"
+              alt="Anúncio de afiliado"
+              width={725}
+              height={90}
+              className="object-cover w-full h-full"
+              data-ai-hint="advertisement banner"
+              priority
             />
-          </div>
-          <div className="flex-1 overflow-hidden">
-            <p className="font-semibold text-sm truncate text-foreground group-hover:text-primary transition-colors">{ad.title}</p>
-            <p className={cn("text-xs text-muted-foreground truncate")}>{ad.description}</p>
-          </div>
         </Link>
-           <Badge variant={'secondary'} className={cn(
-               'bg-secondary text-secondary-foreground text-xs'
-           )}>
-            Anúncio
-          </Badge>
           <Button 
             variant="ghost" 
             size="icon"
             onClick={handleClose}
             disabled={!canClose}
-            className="h-7 w-7 rounded-full absolute top-1 right-1 bg-black/30 hover:bg-black/50 disabled:bg-black/10 disabled:cursor-not-allowed"
+            className="h-7 w-7 rounded-full absolute top-1 right-1 bg-black/40 hover:bg-black/60 disabled:bg-black/20 disabled:cursor-not-allowed"
             aria-label="Fechar anúncio"
             >
-             <X className={cn("h-4 w-4 text-white", !canClose && "text-white/30")} />
+             <X className={cn("h-4 w-4 text-white", !canClose && "text-white/40")} />
           </Button>
         </div>
     </div>
