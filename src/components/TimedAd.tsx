@@ -13,16 +13,19 @@ const CLOSE_BUTTON_DELAY = 15 * 1000; // 15 segundos
 const AD_ROTATION_INTERVAL = 10 * 1000; // 10 segundos para rotacionar
 
 export function TimedAd() {
-  const [isVisible, setIsVisible] = useState(false); // Começa invisível e é controlado pelo useEffect
+  const [isVisible, setIsVisible] = useState(true);
   const [canClose, setCanClose] = useState(false);
   const [currentAdIndex, setCurrentAdIndex] = useState(0);
   const reappearTimer = useRef<NodeJS.Timeout | null>(null);
 
   const handleClose = () => {
     setIsVisible(false);
+    setCanClose(false); // Desabilita o botão ao fechar
     localStorage.setItem('adLastClosedTime', new Date().getTime().toString());
-    
-    if (reappearTimer.current) clearTimeout(reappearTimer.current);
+
+    if (reappearTimer.current) {
+      clearTimeout(reappearTimer.current);
+    }
 
     reappearTimer.current = setTimeout(() => {
       setIsVisible(true);
@@ -43,6 +46,7 @@ export function TimedAd() {
     if (timeSinceClosed >= AD_REAPPEAR_INTERVAL) {
       setIsVisible(true);
     } else {
+      setIsVisible(false); // Começa invisível se o tempo não passou
       const timeUntilReappear = AD_REAPPEAR_INTERVAL - timeSinceClosed;
       if (reappearTimer.current) clearTimeout(reappearTimer.current);
       reappearTimer.current = setTimeout(() => setIsVisible(true), timeUntilReappear);
@@ -59,13 +63,12 @@ export function TimedAd() {
     let rotationInterval: NodeJS.Timeout | null = null;
 
     if (isVisible) {
-      // Reseta `canClose` e o temporizador toda vez que o anúncio se torna visível
-      setCanClose(false); 
+      setCanClose(false); // Garante que o botão comece desabilitado
+
       closeTimer = setTimeout(() => {
         setCanClose(true);
       }, CLOSE_BUTTON_DELAY);
 
-      // Inicia a rotação de anúncios
       if (timedAds.length > 1) {
         rotationInterval = setInterval(() => {
           setCurrentAdIndex((prevIndex) => (prevIndex + 1) % timedAds.length);
@@ -77,7 +80,7 @@ export function TimedAd() {
       if (closeTimer) clearTimeout(closeTimer);
       if (rotationInterval) clearInterval(rotationInterval);
     };
-  }, [isVisible, currentAdIndex]); // Re-executa se o anúncio visível mudar
+  }, [isVisible]);
 
   if (!isVisible || timedAds.length === 0) {
     return null;
