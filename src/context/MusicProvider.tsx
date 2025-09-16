@@ -6,6 +6,10 @@ import React, { createContext, useState, useRef, useEffect, useCallback } from '
 
 const MAX_TOTAL_PLAYLISTS = 12;
 
+// LocalStorage Keys
+const SONGS_STORAGE_KEY = 'musicflow-songs';
+const PLAYLISTS_STORAGE_KEY = 'musicflow-playlists';
+
 interface MusicContextType {
   // Songs
   songs: Song[];
@@ -38,9 +42,25 @@ interface MusicContextType {
 
 export const MusicContext = createContext<MusicContextType | null>(null);
 
+const getInitialState = <T,>(key: string, fallback: T): T => {
+    if (typeof window === 'undefined') {
+      return fallback;
+    }
+    try {
+      const storedValue = window.localStorage.getItem(key);
+      if (storedValue) {
+        return JSON.parse(storedValue);
+      }
+    } catch (error) {
+      console.error(`Error reading from localStorage key “${key}”:`, error);
+    }
+    return fallback;
+  };
+
 export function MusicProvider({ children }: { children: React.ReactNode }) {
-  const [songs, setSongs] = useState<Song[]>(initialSongs);
-  const [playlists, setPlaylists] = useState<Playlist[]>(initialPlaylists);
+  const [songs, setSongs] = useState<Song[]>(() => getInitialState(SONGS_STORAGE_KEY, initialSongs));
+  const [playlists, setPlaylists] = useState<Playlist[]>(() => getInitialState(PLAYLISTS_STORAGE_KEY, initialPlaylists));
+  
   const [currentSong, setCurrentSong] = useState<Song | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [queue, setQueue] = useState<Song[]>([]);
@@ -51,6 +71,25 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   
+  // Effect to save songs to localStorage
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(SONGS_STORAGE_KEY, JSON.stringify(songs));
+    } catch (error) {
+      console.error('Failed to save songs to localStorage:', error);
+    }
+  }, [songs]);
+
+  // Effect to save playlists to localStorage
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(PLAYLISTS_STORAGE_KEY, JSON.stringify(playlists));
+    } catch (error) {
+      console.error('Failed to save playlists to localStorage:', error);
+    }
+  }, [playlists]);
+
+
   const canCreatePlaylist = React.useMemo(() => {
     if (playlists.length >= MAX_TOTAL_PLAYLISTS) {
       return {
