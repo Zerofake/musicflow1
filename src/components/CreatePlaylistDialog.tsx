@@ -46,7 +46,14 @@ export function CreatePlaylistDialog({ open, onOpenChange }: { open: boolean, on
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(isOpen) => {
+        onOpenChange(isOpen);
+        if (!isOpen) {
+            setName('');
+            setDescription('');
+            setError('');
+        }
+    }}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Criar Nova Playlist</DialogTitle>
@@ -88,7 +95,7 @@ export function CreatePlaylistDialog({ open, onOpenChange }: { open: boolean, on
                     Cancelar
                 </Button>
             </DialogClose>
-          <Button onClick={handleSubmit} disabled={!canCreatePlaylist.can || !!error}>
+          <Button onClick={handleSubmit} disabled={!canCreatePlaylist.can || !!error || !name}>
             Criar Playlist
           </Button>
         </DialogFooter>

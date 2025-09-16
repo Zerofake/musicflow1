@@ -27,13 +27,13 @@ export const initialPlaylists: Playlist[] = [
     name: 'Downloads',
     description: 'Músicas baixadas recentemente.',
     coverArt: 'https://picsum.photos/seed/playlist1/500/500',
-    songIds: ['1'],
+    songs: [],
   },
   {
     id: '2',
     name: 'Vibes de Academia',
     description: 'Para dar aquele gás no treino.',
     coverArt: 'https://picsum.photos/seed/playlist2/500/500',
-    songIds: ['2'],
+    songs: [],
   },
 ];

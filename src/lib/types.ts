@@ -13,7 +13,7 @@ export interface Playlist {
   name:string;
   description: string;
   coverArt: string; // URL to image
-  songIds: string[];
+  songs: Song[];
 }
 
 export interface UserData {

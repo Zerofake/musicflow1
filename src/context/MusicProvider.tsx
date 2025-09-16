@@ -16,14 +16,14 @@ interface MusicContextType {
   // Songs
   songs: Song[];
   addSongs: (newSongs: Song[]) => void;
-  deleteSong: (songId: string) => void;
+  deleteSong: (songId: string, fromPlaylistId?: string) => void;
   
   // Playlists
   playlists: Playlist[];
   createPlaylist: (name: string, description: string) => boolean;
   deletePlaylist: (playlistId: string) => void;
   updatePlaylist: (playlistId: string, data: Partial<Omit<Playlist, 'id'>>) => void;
-  addSongToPlaylist: (playlistId: string, songId: string) => void;
+  moveSongToPlaylist: (playlistId: string, song: Song, source: 'songs' | { playlistId: string }) => void;
   addSongsToPlaylist: (playlistId: string, newSongs: Song[]) => void;
   removeSongFromPlaylist: (playlistId: string, songId: string) => void;
 
@@ -70,7 +70,6 @@ const getInitialState = <T,>(key: string, fallback: T): T => {
 export function MusicProvider({ children }: { children: React.ReactNode }) {
   const [isHydrated, setIsHydrated] = useState(false);
 
-  // Initialize with fallback state, and hydrate from localStorage in useEffect
   const [songs, setSongs] = useState<Song[]>([]);
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [userData, setUserData] = useState<UserData>({ coins: 0, adFreeUntil: null });
@@ -86,7 +85,6 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Hydrate from localStorage on client side
   useEffect(() => {
     setSongs(getInitialState(SONGS_STORAGE_KEY, initialSongs));
     setPlaylists(getInitialState(PLAYLISTS_STORAGE_KEY, initialPlaylists));
@@ -94,7 +92,6 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
     setIsHydrated(true);
   }, []);
   
-  // Effects to save data to localStorage
   useEffect(() => {
     if (!isHydrated) return;
     try {
@@ -122,24 +119,20 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
     }
   }, [userData, isHydrated]);
 
-  // Effect to check ad-free status
   useEffect(() => {
     const checkAdStatus = () => {
         const now = new Date().getTime();
         if (userData.adFreeUntil && now < userData.adFreeUntil) {
             setIsAdFree(true);
-        } else if (isAdFree) { // If it was ad-free but time expired
+        } else if (isAdFree) {
             setIsAdFree(false);
             setUserData(prev => ({...prev, adFreeUntil: null}));
         }
     };
-
     checkAdStatus();
-    const interval = setInterval(checkAdStatus, 10000); // Check every 10 seconds
+    const interval = setInterval(checkAdStatus, 10000);
     return () => clearInterval(interval);
-
   }, [userData.adFreeUntil, isAdFree]);
-
 
   const canCreatePlaylist = React.useMemo(() => {
     if (playlists.length >= MAX_TOTAL_PLAYLISTS) {
@@ -148,7 +141,6 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
         message: `Você atingiu o limite máximo de ${MAX_TOTAL_PLAYLISTS} playlists.`,
       };
     }
-    
     return {
         can: true,
         message: `Você pode criar até ${MAX_TOTAL_PLAYLISTS} playlists.`
@@ -159,32 +151,24 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
     if (audioRef.current && audioRef.current.src && !audioRef.current.paused) {
       audioRef.current.pause();
     }
-    
     setCurrentSong(song);
-    
     const newQueue = songQueue.length > 0 ? songQueue : [...songs];
     setQueue(newQueue);
     const songIndex = newQueue.findIndex(s => s.id === song.id);
     setCurrentSongIndex(songIndex);
-
     if (songIndex === -1 && songs.findIndex(s => s.id === song.id) === -1) {
         setCurrentSong(null);
         setIsPlaying(false);
         return;
     }
-
     const audio = audioRef.current ? audioRef.current : new Audio();
     if (!audioRef.current) {
         audioRef.current = audio;
     }
-    
     audio.src = song.audioSrc;
     audio.load();
-    audio.play()
-      .then(() => setIsPlaying(true))
-      .catch(e => console.error("Error playing audio:", e));
+    audio.play().then(() => setIsPlaying(true)).catch(e => console.error("Error playing audio:", e));
   }, [songs]);
-
 
   const playNext = useCallback(() => {
     if (queue.length === 0) return;
@@ -192,12 +176,9 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
     playSong(queue[nextIndex], queue);
   }, [currentSongIndex, queue, playSong]);
 
-
   useEffect(() => {
     const audio = audioRef.current ? audioRef.current : new Audio();
-    if (!audioRef.current) {
-      audioRef.current = audio;
-    }
+    if (!audioRef.current) audioRef.current = audio;
 
     const handleTimeUpdate = () => setCurrentTime(audio.currentTime);
     const handleLoadedMetadata = () => setDuration(audio.duration);
@@ -231,17 +212,13 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
     setIsPlaying(prev => !prev);
   }, [isPlaying, currentSong]);
 
-
   const createPlaylist = useCallback((name: string, description: string): boolean => {
-    if (!canCreatePlaylist.can || !name || name.length > 200) {
-        return false;
-    }
-    
+    if (!canCreatePlaylist.can || !name || name.length > 200) return false;
     const newPlaylist: Playlist = {
       id: Date.now().toString(),
       name,
       description,
-      songIds: [],
+      songs: [],
       coverArt: `https://picsum.photos/seed/${Date.now()}/500/500`
     };
     setPlaylists(prev => [...prev, newPlaylist]);
@@ -256,42 +233,54 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
     setPlaylists(prev => prev.map(p => p.id === playlistId ? { ...p, ...data } : p));
   }, []);
 
-  const addSongToPlaylist = useCallback((playlistId: string, songId: string) => {
+  const moveSongToPlaylist = useCallback((playlistId: string, song: Song, source: 'songs' | { playlistId: string }) => {
+    // Adiciona a música na nova playlist
     setPlaylists(prev => prev.map(p => {
-      if (p.id === playlistId && !p.songIds.includes(songId)) {
-        return { ...p, songIds: [...p.songIds, songId] };
+      if (p.id === playlistId) {
+        if (p.songs.find(s => s.id === song.id)) return p; // Já existe
+        return { ...p, songs: [...p.songs, song] };
       }
       return p;
     }));
+
+    // Remove a música da origem
+    if (source === 'songs') {
+      setSongs(prev => prev.filter(s => s.id !== song.id));
+    } else {
+      setPlaylists(prev => prev.map(p => {
+        if (p.id === source.playlistId) {
+          return { ...p, songs: p.songs.filter(s => s.id !== song.id) };
+        }
+        return p;
+      }));
+    }
   }, []);
 
   const addSongsToPlaylist = useCallback((playlistId: string, newSongs: Song[]) => {
-    // 1. Add new songs to the global songs list, avoiding duplicates
-    setSongs(prevSongs => {
-      const uniqueNewSongs = newSongs.filter(
-        newSong => !prevSongs.some(existingSong => existingSong.id === newSong.id)
-      );
-      return [...prevSongs, ...uniqueNewSongs];
-    });
-
-    // 2. Add new song IDs to the specific playlist
-    const newSongIds = newSongs.map(s => s.id);
     setPlaylists(prevPls => prevPls.map(p => {
         if (p.id === playlistId) {
-            const songIdsToAdd = newSongIds.filter(id => !p.songIds.includes(id));
-            return { ...p, songIds: [...p.songIds, ...songIdsToAdd] };
+            const uniqueNewSongs = newSongs.filter(
+                newSong => !p.songs.some(existingSong => existingSong.id === newSong.id)
+            );
+            return { ...p, songs: [...p.songs, ...uniqueNewSongs] };
         }
         return p;
     }));
   }, []);
 
   const removeSongFromPlaylist = useCallback((playlistId: string, songId: string) => {
+    let songToMove: Song | undefined;
     setPlaylists(prev => prev.map(p => {
       if (p.id === playlistId) {
-        return { ...p, songIds: p.songIds.filter(id => id !== songId) };
+        songToMove = p.songs.find(s => s.id === songId);
+        return { ...p, songs: p.songs.filter(id => id.id !== songId) };
       }
       return p;
     }));
+
+    if (songToMove) {
+      setSongs(prev => [...prev, songToMove!]);
+    }
   }, []);
   
   const addSongs = useCallback((newSongs: Song[]) => {
@@ -303,15 +292,17 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
   
-  const deleteSong = useCallback((songId: string) => {
-    setPlaylists(prev => 
-      prev.map(p => ({
-        ...p,
-        songIds: p.songIds.filter(id => id !== songId)
-      }))
-    );
-
-    setSongs(prev => prev.filter(s => s.id !== songId));
+  const deleteSong = useCallback((songId: string, fromPlaylistId?: string) => {
+    if (fromPlaylistId) {
+      setPlaylists(prev => prev.map(p => {
+        if (p.id === fromPlaylistId) {
+          return { ...p, songs: p.songs.filter(s => s.id !== songId) };
+        }
+        return p;
+      }));
+    } else {
+      setSongs(prev => prev.filter(s => s.id !== songId));
+    }
 
     if (currentSong?.id === songId) {
       if (audioRef.current) {
@@ -346,7 +337,6 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
     playSong(queue[prevIndex], queue);
   }, [currentSongIndex, queue, playSong]);
 
-
   const seek = useCallback((time: number) => {
     if (audioRef.current) {
       audioRef.current.currentTime = time;
@@ -359,9 +349,7 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const spendCoins = useCallback((amount: number) => {
-    if (userData.coins < amount) {
-        return false;
-    }
+    if (userData.coins < amount) return false;
     const now = new Date().getTime();
     const currentAdFreeTime = userData.adFreeUntil && userData.adFreeUntil > now ? userData.adFreeUntil : now;
     const minutesToAdd = (amount / 1) * 10;
@@ -375,7 +363,6 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
     return true;
   }, [userData]);
 
-
   const value = {
     songs,
     addSongs,
@@ -384,7 +371,7 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
     createPlaylist,
     deletePlaylist,
     updatePlaylist,
-    addSongToPlaylist,
+    moveSongToPlaylist,
     addSongsToPlaylist,
     removeSongFromPlaylist,
     isPlaying,
@@ -401,7 +388,7 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
     canCreatePlaylist,
     coins: userData.coins,
     spendCoins,
-isAdFree,
+    isAdFree,
     isHydrated
   };
 
@@ -411,5 +398,3 @@ isAdFree,
     </MusicContext.Provider>
   );
 }
-
-    

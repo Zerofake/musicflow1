@@ -1,7 +1,7 @@
 "use client";
 
 import Image from 'next/image';
-import { Play, GripVertical, PlusCircle, MinusCircle, Music, Pause, Trash2 } from 'lucide-react';
+import { Play, GripVertical, PlusCircle, MinusCircle, Music, Pause, Trash2, ChevronsRight } from 'lucide-react';
 import { useMusic } from '@/hooks/useMusic';
 import type { Song } from '@/lib/types';
 import { cn } from '@/lib/utils';
@@ -16,7 +16,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -31,7 +31,7 @@ import {
 interface SongItemProps {
   song: Song;
   playlistSongs: Song[];
-  playlistId?: string;
+  playlistId?: string; // Se presente, a música está em uma playlist
   draggable?: boolean;
   onDragStart?: (e: React.DragEvent<HTMLDivElement>, songId: string) => void;
   onDragEnter?: (e: React.DragEvent<HTMLDivElement>, songId: string) => void;
@@ -40,7 +40,7 @@ interface SongItemProps {
 }
 
 export function SongItem({ song, playlistSongs, playlistId, draggable = false, ...dragProps }: SongItemProps) {
-  const { playSong, currentSong, isPlaying, togglePlay, playlists, addSongToPlaylist, removeSongFromPlaylist, deleteSong } = useMusic();
+  const { playSong, currentSong, isPlaying, togglePlay, playlists, moveSongToPlaylist, removeSongFromPlaylist, deleteSong } = useMusic();
   const isActive = currentSong?.id === song.id;
   
   const [duration, setDuration] = useState(song.duration);
@@ -50,7 +50,6 @@ export function SongItem({ song, playlistSongs, playlistId, draggable = false, .
     setDuration(song.duration);
   }, [song.duration]);
 
-
   const handlePlay = () => {
     if (isActive) {
         togglePlay();
@@ -59,8 +58,9 @@ export function SongItem({ song, playlistSongs, playlistId, draggable = false, .
     }
   };
 
-  const handleAddSongToPlaylist = (playlistId: string) => {
-    addSongToPlaylist(playlistId, song.id);
+  const handleMoveSongToPlaylist = (targetPlaylistId: string) => {
+    const source = playlistId ? { playlistId } : 'songs';
+    moveSongToPlaylist(targetPlaylistId, song, source);
   };
   
   const handleRemoveSongFromPlaylist = () => {
@@ -70,7 +70,7 @@ export function SongItem({ song, playlistSongs, playlistId, draggable = false, .
   };
 
   const handleDeleteSong = () => {
-    deleteSong(song.id);
+    deleteSong(song.id, playlistId);
     setIsDeleteDialogOpen(false);
   }
 
@@ -133,13 +133,13 @@ export function SongItem({ song, playlistSongs, playlistId, draggable = false, .
         <DropdownMenuContent>
           <DropdownMenuSub>
             <DropdownMenuSubTrigger>
-              <PlusCircle className="mr-2 h-4 w-4" />
-              <span>Adicionar à playlist</span>
+              <ChevronsRight className="mr-2 h-4 w-4" />
+              <span>Mover para playlist</span>
             </DropdownMenuSubTrigger>
             <DropdownMenuPortal>
               <DropdownMenuSubContent>
-                {playlists.map((p) => (
-                  <DropdownMenuItem key={p.id} onClick={() => handleAddSongToPlaylist(p.id)} disabled={p.songIds.includes(song.id)}>
+                {playlists.filter(p => p.id !== playlistId).map((p) => (
+                  <DropdownMenuItem key={p.id} onClick={() => handleMoveSongToPlaylist(p.id)}>
                     {p.name}
                   </DropdownMenuItem>
                 ))}
@@ -166,7 +166,7 @@ export function SongItem({ song, playlistSongs, playlistId, draggable = false, .
           <AlertDialogHeader>
             <AlertDialogTitle>Excluir Música?</AlertDialogTitle>
             <AlertDialogDescription>
-              A música "{song.title}" será removida do aplicativo e de todas as playlists. Esta ação não pode ser desfeita.
+              A música "{song.title}" será removida permanentemente. Esta ação não pode ser desfeita.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

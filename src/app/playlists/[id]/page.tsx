@@ -36,18 +36,15 @@ import {
   } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import type { Song } from '@/lib/types';
-import { Skeleton } from '@/components/ui/skeleton';
 
 export default function PlaylistDetailPage() {
   const params = useParams();
   const playlistId = typeof params.id === 'string' ? params.id : '';
-  const { playlists, songs, deletePlaylist, updatePlaylist, isHydrated } = useMusic();
+  const { playlists, deletePlaylist, updatePlaylist, isHydrated } = useMusic();
   const router = useRouter();
   
   const playlist = playlists.find((p) => p.id === playlistId);
   
-  const [playlistSongs, setPlaylistSongs] = useState<Song[]>([]);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editedName, setEditedName] = useState(playlist?.name || '');
@@ -57,12 +54,8 @@ export default function PlaylistDetailPage() {
     if (playlist) {
       setEditedName(playlist.name);
       setEditedDescription(playlist.description || '');
-      const mappedSongs = playlist.songIds
-        .map((songId) => songs.find((s) => s.id === songId))
-        .filter(Boolean) as Song[];
-      setPlaylistSongs(mappedSongs);
     }
-  }, [playlist, songs]);
+  }, [playlist]);
 
   const dragItem = useRef<string | null>(null);
   const dragOverItem = useRef<string | null>(null);
@@ -77,14 +70,14 @@ export default function PlaylistDetailPage() {
 
   const handleDragEnd = () => {
     if (dragItem.current && dragOverItem.current && dragItem.current !== dragOverItem.current && playlistId) {
-      const newSongIds = [...(playlist?.songIds || [])];
-      const dragItemIndex = newSongIds.indexOf(dragItem.current);
-      const dragOverItemIndex = newSongIds.indexOf(dragOverItem.current);
+      const newSongs = [...(playlist?.songs || [])];
+      const dragItemIndex = newSongs.findIndex(s => s.id === dragItem.current);
+      const dragOverItemIndex = newSongs.findIndex(s => s.id === dragOverItem.current);
       
-      const [removed] = newSongIds.splice(dragItemIndex, 1);
-      newSongIds.splice(dragOverItemIndex, 0, removed);
+      const [removed] = newSongs.splice(dragItemIndex, 1);
+      newSongs.splice(dragOverItemIndex, 0, removed);
       
-      updatePlaylist(playlistId, { songIds: newSongIds });
+      updatePlaylist(playlistId, { songs: newSongs });
     }
     dragItem.current = null;
     dragOverItem.current = null;
@@ -104,9 +97,7 @@ export default function PlaylistDetailPage() {
     }
   }
 
-  // Se os dados não foram carregados do localStorage e a playlist não foi encontrada,
-  // renderiza um placeholder mínimo para evitar o erro 404 prematuro.
-  if (!isHydrated && !playlist) {
+  if (!isHydrated) {
     return (
         <div>
             <div className="relative h-60 w-full">
@@ -116,16 +107,8 @@ export default function PlaylistDetailPage() {
     );
   }
 
-  // Se os dados foram carregados, mas a playlist ainda não existe, redireciona.
-  if (isHydrated && !playlist) {
-    notFound();
-  }
-
-  // Se a playlist existe, mas o nome ainda não foi carregado no estado de edição,
-  // isso pode indicar um carregamento inicial, então atualizamos o estado.
-  if (playlist && editedName !== playlist.name) {
-    setEditedName(playlist.name);
-    setEditedDescription(playlist.description || '');
+  if (!playlist) {
+    return notFound();
   }
 
   return (
@@ -176,12 +159,12 @@ export default function PlaylistDetailPage() {
             <AddMusicToPlaylistButton playlistId={playlistId} />
         </div>
         <div className="space-y-1">
-          {playlistSongs.length > 0 ? (
-            playlistSongs.map((song) => (
+          {playlist.songs.length > 0 ? (
+            playlist.songs.map((song) => (
               <SongItem 
                 key={song.id} 
                 song={song}
-                playlistSongs={playlistSongs}
+                playlistSongs={playlist.songs}
                 playlistId={playlistId}
                 draggable
                 onDragStart={handleDragStart}
