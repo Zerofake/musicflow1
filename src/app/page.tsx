@@ -78,7 +78,7 @@ export default function PlaylistsPage() {
                     <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
                     <div className="absolute bottom-2 left-3">
                       <h3 className="font-bold text-white">{playlist.name}</h3>
-                      <p className="text-xs text-neutral-300">{playlist.songs.length} músicas</p>
+                      <p className="text-xs text-neutral-300">{(playlist.songs && playlist.songs.length) || 0} músicas</p>
                     </div>
                   </div>
                 </CardContent>
