@@ -7,20 +7,22 @@ import { X } from 'lucide-react';
 import { timedAds } from '@/lib/affiliate-ads';
 import { cn } from '@/lib/utils';
 import { Button } from './ui/button';
+import { useMusic } from '@/hooks/useMusic';
 
 const AD_REAPPEAR_INTERVAL = 3 * 60 * 1000; // 3 minutos
 const CLOSE_BUTTON_DELAY = 15 * 1000; // 15 segundos
 const AD_ROTATION_INTERVAL = 10 * 1000; // 10 segundos para rotacionar
 
 export function TimedAd() {
-  const [isVisible, setIsVisible] = useState(true);
+  const { isAdFree } = useMusic();
+  const [isVisible, setIsVisible] = useState(false);
   const [canClose, setCanClose] = useState(false);
   const [currentAdIndex, setCurrentAdIndex] = useState(0);
   const reappearTimer = useRef<NodeJS.Timeout | null>(null);
 
   const handleClose = () => {
     setIsVisible(false);
-    setCanClose(false); // Desabilita o botão ao fechar
+    setCanClose(false);
     localStorage.setItem('adLastClosedTime', new Date().getTime().toString());
 
     if (reappearTimer.current) {
@@ -32,7 +34,6 @@ export function TimedAd() {
     }, AD_REAPPEAR_INTERVAL);
   };
 
-  // Efeito para controlar a aparição inicial do anúncio
   useEffect(() => {
     const lastClosedTime = localStorage.getItem('adLastClosedTime');
     if (!lastClosedTime) {
@@ -46,7 +47,7 @@ export function TimedAd() {
     if (timeSinceClosed >= AD_REAPPEAR_INTERVAL) {
       setIsVisible(true);
     } else {
-      setIsVisible(false); // Começa invisível se o tempo não passou
+      setIsVisible(false);
       const timeUntilReappear = AD_REAPPEAR_INTERVAL - timeSinceClosed;
       if (reappearTimer.current) clearTimeout(reappearTimer.current);
       reappearTimer.current = setTimeout(() => setIsVisible(true), timeUntilReappear);
@@ -57,13 +58,12 @@ export function TimedAd() {
     };
   }, []);
 
-  // Efeito para controlar o botão de fechar e a rotação de anúncios
   useEffect(() => {
     let closeTimer: NodeJS.Timeout | null = null;
     let rotationInterval: NodeJS.Timeout | null = null;
 
     if (isVisible) {
-      setCanClose(false); // Garante que o botão comece desabilitado
+      setCanClose(false); 
 
       closeTimer = setTimeout(() => {
         setCanClose(true);
@@ -82,7 +82,7 @@ export function TimedAd() {
     };
   }, [isVisible]);
 
-  if (!isVisible || timedAds.length === 0) {
+  if (!isVisible || timedAds.length === 0 || isAdFree) {
     return null;
   }
 
@@ -90,6 +90,21 @@ export function TimedAd() {
 
   return (
     <div className="relative w-full mb-4">
+        <div className="absolute top-1 right-1 z-20">
+             <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleClose}
+                disabled={!canClose}
+                className={cn(
+                "h-6 w-6 bg-black/50 hover:bg-black/70 text-white rounded-full",
+                !canClose && "cursor-not-allowed opacity-50"
+                )}
+                aria-label="Fechar anúncio"
+            >
+                <X className="h-4 w-4" />
+            </Button>
+        </div>
       <Link href={ad.link} target="_blank" rel="noopener noreferrer" className="block group">
         <div className="relative overflow-hidden rounded-lg aspect-[8/1] w-full bg-muted">
           <Image
@@ -102,19 +117,6 @@ export function TimedAd() {
           />
         </div>
       </Link>
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={handleClose}
-        disabled={!canClose}
-        className={cn(
-          "absolute top-1 right-1 h-6 w-6 bg-black/50 hover:bg-black/70 text-white rounded-full z-10",
-          !canClose && "cursor-not-allowed opacity-50"
-        )}
-        aria-label="Fechar anúncio"
-      >
-        <X className="h-4 w-4" />
-      </Button>
     </div>
   );
 }

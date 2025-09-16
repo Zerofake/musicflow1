@@ -10,8 +10,13 @@ export interface Song {
 
 export interface Playlist {
   id: string;
-  name: string;
+  name:string;
   description: string;
   coverArt: string; // URL to image
   songIds: string[];
+}
+
+export interface UserData {
+  coins: number;
+  adFreeUntil: number | null;
 }

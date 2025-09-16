@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
+import { useMusic } from '@/hooks/useMusic';
 
 const messages = [
   { lang: 'pt', text: 'Doação PIX: onlupy@gmail.com', duration: 10000 },
@@ -10,6 +11,7 @@ const messages = [
 ];
 
 export function PixDonation() {
+  const { isAdFree } = useMusic();
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
 
   useEffect(() => {
@@ -20,6 +22,10 @@ export function PixDonation() {
 
     return () => clearTimeout(timer);
   }, [currentMessageIndex]);
+
+  if (isAdFree) {
+    return null;
+  }
 
   return (
     <div className="w-full">

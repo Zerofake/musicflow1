@@ -113,7 +113,7 @@ export function AddMusicButton() {
         <>
             <button 
                 onClick={handleImportClick} 
-                className="flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-primary transition-colors w-24"
+                className="flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-primary transition-colors"
                 aria-label="Adicionar músicas"
             >
                 <PlusCircle className="h-6 w-6" />

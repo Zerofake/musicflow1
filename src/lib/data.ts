@@ -19,24 +19,6 @@ export const initialSongs: Song[] = [
     coverArt: 'https://picsum.photos/seed/music2/500/500',
     audioSrc: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3',
   },
-  {
-    id: '3',
-    title: 'Ondas de Verão',
-    artist: 'Sol',
-    album: 'Praia e Brisa',
-    duration: 195,
-    coverArt: 'https://picsum.photos/seed/music3/500/500',
-    audioSrc: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3',
-  },
-  {
-    id: '4',
-    title: 'Floresta Encantada',
-    artist: 'Gaia',
-    album: 'Natureza Viva',
-    duration: 240,
-    coverArt: 'https://picsum.photos/seed/music4/500/500',
-    audioSrc: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3',
-  }
 ];
 
 export const initialPlaylists: Playlist[] = [
@@ -45,13 +27,13 @@ export const initialPlaylists: Playlist[] = [
     name: 'Downloads',
     description: 'Músicas baixadas recentemente.',
     coverArt: 'https://picsum.photos/seed/playlist1/500/500',
-    songIds: ['1', '3'],
+    songIds: ['1'],
   },
   {
     id: '2',
     name: 'Vibes de Academia',
     description: 'Para dar aquele gás no treino.',
     coverArt: 'https://picsum.photos/seed/playlist2/500/500',
-    songIds: ['2', '4'],
+    songIds: ['2'],
   },
 ];
