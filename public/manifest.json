@@ -1,6 +1,6 @@
 {
   "name": "Music Flow",
-  "short_name": "MusicFlow1",
+  "short_name": "MusicFlow",
   "description": "Seu player de música offline com sugestões inteligentes.",
   "start_url": "/",
   "display": "standalone",
