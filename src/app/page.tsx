@@ -15,7 +15,6 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { TimedAd } from '@/components/TimedAd';
-import { Skeleton } from '@/components/ui/skeleton';
 
 export default function PlaylistsPage() {
   const { playlists, canCreatePlaylist, isHydrated } = useMusic();
@@ -57,13 +56,7 @@ export default function PlaylistsPage() {
 
       <CreatePlaylistDialog open={dialogOpen} onOpenChange={setDialogOpen} />
       
-      {!isHydrated ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-          <Skeleton className="w-full h-auto aspect-square" />
-          <Skeleton className="w-full h-auto aspect-square" />
-          <Skeleton className="w-full h-auto aspect-square" />
-        </div>
-      ) : playlists.length > 0 ? (
+      {playlists.length > 0 ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
           {playlists.map((playlist) => (
             <Link href={`/playlists/${playlist.id}`} key={playlist.id} className="group relative">

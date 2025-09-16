@@ -4,23 +4,14 @@ import { useMusic } from '@/hooks/useMusic';
 import { SongItem } from '@/components/SongItem';
 import { Card, CardContent } from '@/components/ui/card';
 import { Music } from 'lucide-react';
-import { Skeleton } from '@/components/ui/skeleton';
 
 export default function AllSongsPage() {
-  const { songs, isHydrated } = useMusic();
+  const { songs } = useMusic();
 
   return (
     <div className="p-4 sm:p-6">
       <h1 className="text-3xl font-bold mb-6">Todas as Músicas</h1>
-      {!isHydrated ? (
-        <div className="space-y-2">
-            <Skeleton className="h-16 w-full" />
-            <Skeleton className="h-16 w-full" />
-            <Skeleton className="h-16 w-full" />
-            <Skeleton className="h-16 w-full" />
-            <Skeleton className="h-16 w-full" />
-        </div>
-      ) : songs.length > 0 ? (
+      {songs.length > 0 ? (
         <div className="space-y-2">
             {songs.map((song) => (
             <SongItem key={song.id} song={song} playlistSongs={songs} />
