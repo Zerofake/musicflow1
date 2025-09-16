@@ -237,19 +237,21 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
     // Adiciona a música na nova playlist
     setPlaylists(prev => prev.map(p => {
       if (p.id === playlistId) {
-        if (p.songs.find(s => s.id === song.id)) return p; // Já existe
-        return { ...p, songs: [...p.songs, song] };
+        const currentSongs = p.songs || [];
+        if (currentSongs.find(s => s.id === song.id)) return p; // Já existe
+        return { ...p, songs: [...currentSongs, song] };
       }
       return p;
     }));
-
+  
     // Remove a música da origem
     if (source === 'songs') {
       setSongs(prev => prev.filter(s => s.id !== song.id));
     } else {
       setPlaylists(prev => prev.map(p => {
         if (p.id === source.playlistId) {
-          return { ...p, songs: p.songs.filter(s => s.id !== song.id) };
+          const currentSongs = p.songs || [];
+          return { ...p, songs: currentSongs.filter(s => s.id !== song.id) };
         }
         return p;
       }));
@@ -259,10 +261,11 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
   const addSongsToPlaylist = useCallback((playlistId: string, newSongs: Song[]) => {
     setPlaylists(prevPls => prevPls.map(p => {
         if (p.id === playlistId) {
+            const currentSongs = p.songs || [];
             const uniqueNewSongs = newSongs.filter(
-                newSong => !p.songs.some(existingSong => existingSong.id === newSong.id)
+                newSong => !currentSongs.some(existingSong => existingSong.id === newSong.id)
             );
-            return { ...p, songs: [...p.songs, ...uniqueNewSongs] };
+            return { ...p, songs: [...currentSongs, ...uniqueNewSongs] };
         }
         return p;
     }));
@@ -272,8 +275,9 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
     let songToMove: Song | undefined;
     setPlaylists(prev => prev.map(p => {
       if (p.id === playlistId) {
-        songToMove = p.songs.find(s => s.id === songId);
-        return { ...p, songs: p.songs.filter(id => id.id !== songId) };
+        const currentSongs = p.songs || [];
+        songToMove = currentSongs.find(s => s.id === songId);
+        return { ...p, songs: currentSongs.filter(id => id.id !== songId) };
       }
       return p;
     }));
@@ -296,7 +300,8 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
     if (fromPlaylistId) {
       setPlaylists(prev => prev.map(p => {
         if (p.id === fromPlaylistId) {
-          return { ...p, songs: p.songs.filter(s => s.id !== songId) };
+          const currentSongs = p.songs || [];
+          return { ...p, songs: currentSongs.filter(s => s.id !== songId) };
         }
         return p;
       }));
