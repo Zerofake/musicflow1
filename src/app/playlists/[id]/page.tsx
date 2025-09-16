@@ -159,7 +159,7 @@ export default function PlaylistDetailPage() {
             <AddMusicToPlaylistButton playlistId={playlistId} />
         </div>
         <div className="space-y-1">
-          {playlist.songs.length > 0 ? (
+          {playlist.songs && playlist.songs.length > 0 ? (
             playlist.songs.map((song) => (
               <SongItem 
                 key={song.id} 
