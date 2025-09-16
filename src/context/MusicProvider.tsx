@@ -23,6 +23,7 @@ interface MusicContextType {
   deletePlaylist: (playlistId: string) => void;
   updatePlaylist: (playlistId: string, data: Partial<Omit<Playlist, 'id'>>) => void;
   addSongToPlaylist: (playlistId: string, songId: string) => void;
+  addSongsToPlaylist: (playlistId: string, newSongs: Song[]) => void;
   removeSongFromPlaylist: (playlistId: string, songId: string) => void;
 
   // Music Player
@@ -246,6 +247,26 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
     }));
   }, []);
 
+  const addSongsToPlaylist = useCallback((playlistId: string, newSongs: Song[]) => {
+    // 1. Add new songs to the global songs list, avoiding duplicates
+    setSongs(prevSongs => {
+      const uniqueNewSongs = newSongs.filter(
+        newSong => !prevSongs.some(existingSong => existingSong.id === newSong.id)
+      );
+      return [...prevSongs, ...uniqueNewSongs];
+    });
+
+    // 2. Add new song IDs to the specific playlist
+    const newSongIds = newSongs.map(s => s.id);
+    setPlaylists(prevPls => prevPls.map(p => {
+        if (p.id === playlistId) {
+            const songIdsToAdd = newSongIds.filter(id => !p.songIds.includes(id));
+            return { ...p, songIds: [...p.songIds, ...songIdsToAdd] };
+        }
+        return p;
+    }));
+  }, []);
+
   const removeSongFromPlaylist = useCallback((playlistId: string, songId: string) => {
     setPlaylists(prev => prev.map(p => {
       if (p.id === playlistId) {
@@ -346,6 +367,7 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
     deletePlaylist,
     updatePlaylist,
     addSongToPlaylist,
+    addSongsToPlaylist,
     removeSongFromPlaylist,
     isPlaying,
     currentSong,

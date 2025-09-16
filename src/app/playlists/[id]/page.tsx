@@ -8,6 +8,7 @@ import { useMusic } from '@/hooks/useMusic';
 import { SongItem } from '@/components/SongItem';
 import { Button } from '@/components/ui/button';
 import { MoreVertical, Trash2, ArrowLeft, Edit } from 'lucide-react';
+import { AddMusicToPlaylistButton } from '@/components/AddMusicToPlaylistButton';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -154,6 +155,9 @@ export default function PlaylistDetailPage() {
       </div>
       
       <div className="p-4 sm:p-6">
+        <div className="flex justify-end mb-4">
+            <AddMusicToPlaylistButton playlistId={playlistId} />
+        </div>
         <div className="space-y-1">
           {playlistSongs.length > 0 ? (
             playlistSongs.map((song) => (
@@ -170,7 +174,7 @@ export default function PlaylistDetailPage() {
             ))
           ) : (
             <p className="text-muted-foreground text-center py-8">
-              Esta playlist está vazia. Adicione músicas na tela "Todas as Músicas".
+              Esta playlist está vazia. Adicione músicas usando o botão acima.
             </p>
           )}
         </div>
