@@ -68,8 +68,8 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
   const [isHydrated, setIsHydrated] = useState(false);
 
   // Initialize with fallback state, and hydrate from localStorage in useEffect
-  const [songs, setSongs] = useState<Song[]>(initialSongs);
-  const [playlists, setPlaylists] = useState<Playlist[]>(initialPlaylists);
+  const [songs, setSongs] = useState<Song[]>([]);
+  const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [userData, setUserData] = useState<UserData>({ coins: 0, adFreeUntil: null });
   
   const [currentSong, setCurrentSong] = useState<Song | null>(null);
@@ -223,7 +223,7 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
     if (isPlaying) {
       audioRef.current.pause();
     } else {
-      audio.current.play().catch(e => console.error("Error playing audio:", e));;
+      audioRef.current.play().catch(e => console.error("Error playing audio:", e));;
     }
     setIsPlaying(prev => !prev);
   }, [isPlaying, currentSong]);
@@ -400,11 +400,6 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
     spendCoins,
     isAdFree,
   };
-
-  // Prevent rendering children until hydration is complete
-  if (!isHydrated) {
-    return null;
-  }
 
   return (
     <MusicContext.Provider value={value}>
