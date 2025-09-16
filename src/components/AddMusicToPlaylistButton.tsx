@@ -36,30 +36,15 @@ export function AddMusicToPlaylistButton({ playlistId, asIcon = false }: AddMusi
     const getAudioDuration = (file: File): Promise<number> => {
         return new Promise((resolve) => {
             const audio = document.createElement('audio');
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                audio.src = e.target?.result as string;
-                audio.onloadedmetadata = () => {
-                    resolve(audio.duration);
-                };
-                audio.onerror = () => {
-                    resolve(0); // Could not determine duration
-                }
+            audio.src = URL.createObjectURL(file);
+            audio.onloadedmetadata = () => {
+                resolve(audio.duration);
+                URL.revokeObjectURL(audio.src);
             };
-            reader.readAsDataURL(file);
-        });
-    }
-
-    const fileToDataUri = (file: File): Promise<string> => {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                resolve(e.target?.result as string);
-            };
-            reader.onerror = (e) => {
-                reject(e);
+            audio.onerror = () => {
+                resolve(0); // Could not determine duration
+                URL.revokeObjectURL(audio.src);
             }
-            reader.readAsDataURL(file);
         });
     }
 
@@ -90,10 +75,7 @@ export function AddMusicToPlaylistButton({ playlistId, asIcon = false }: AddMusi
                 continue;
             }
             
-            const [duration, audioSrc] = await Promise.all([
-                getAudioDuration(file),
-                fileToDataUri(file)
-            ]);
+            const duration = await getAudioDuration(file);
 
             const newSong: Song = {
                 id: `${file.name}-${file.lastModified}`,
@@ -101,7 +83,7 @@ export function AddMusicToPlaylistButton({ playlistId, asIcon = false }: AddMusi
                 artist: 'Desconhecido',
                 album: 'Importado',
                 duration: duration,
-                audioSrc: audioSrc,
+                audioSrc: URL.createObjectURL(file),
             };
             newSongs.push(newSong);
             processedInTotal++;
