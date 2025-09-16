@@ -3,15 +3,6 @@ import type { Song, Playlist } from './types';
 
 export const initialSongs: Song[] = [
   {
-    id: 'ai-song-1',
-    title: 'Minha Faixa AI',
-    artist: 'Gerado por IA',
-    album: 'Singles',
-    duration: 180, // Duração em segundos (ajuste se souber)
-    coverArt: 'https://picsum.photos/seed/ai-music-1/500/500',
-    audioSrc: '/music/musica-ia.mp3', // <-- Coloque seu arquivo com este nome em public/music
-  },
-  {
     id: '1',
     title: 'Energia Cósmica',
     artist: 'Orion',
