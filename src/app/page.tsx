@@ -30,6 +30,7 @@ export default function PlaylistsPage() {
   if (!isHydrated) {
     return (
         <div className="p-4 sm:p-6">
+            <TimedAd />
             <div className="flex justify-between items-center mb-6">
                 <h1 className="text-3xl font-bold">Playlists</h1>
             </div>

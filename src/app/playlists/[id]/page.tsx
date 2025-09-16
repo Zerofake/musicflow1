@@ -37,11 +37,12 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import type { Song } from '@/lib/types';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function PlaylistDetailPage() {
   const params = useParams();
   const playlistId = typeof params.id === 'string' ? params.id : '';
-  const { playlists, songs, deletePlaylist, updatePlaylist } = useMusic();
+  const { playlists, songs, deletePlaylist, updatePlaylist, isHydrated } = useMusic();
   const router = useRouter();
   
   const playlist = playlists.find((p) => p.id === playlistId);
@@ -89,12 +90,38 @@ export default function PlaylistDetailPage() {
     dragOverItem.current = null;
   };
 
+  if (!isHydrated) {
+    return (
+        <div>
+            <div className="relative h-60 w-full">
+                <Skeleton className="h-full w-full" />
+                <div className="absolute top-4 left-4">
+                    <Skeleton className="h-10 w-10 rounded-full" />
+                </div>
+                 <div className="absolute top-4 right-4">
+                    <Skeleton className="h-10 w-10 rounded-full" />
+                </div>
+                <div className="absolute bottom-0 left-0 p-4 sm:p-6">
+                    <Skeleton className="h-4 w-20 mb-2" />
+                    <Skeleton className="h-12 w-48" />
+                </div>
+            </div>
+            <div className="p-4 sm:p-6">
+                <div className="flex justify-end mb-4">
+                    <Skeleton className="h-9 w-36" />
+                </div>
+                <div className="space-y-2">
+                    <Skeleton className="h-16 w-full" />
+                    <Skeleton className="h-16 w-full" />
+                    <Skeleton className="h-16 w-full" />
+                </div>
+            </div>
+        </div>
+    );
+  }
+
   if (!playlist) {
-    // Aguarda o useEffect carregar os dados ou redireciona
-    if (playlists.length > 0) {
-        notFound();
-    }
-    return null; 
+    notFound();
   }
   
   const handleDeletePlaylist = () => {
