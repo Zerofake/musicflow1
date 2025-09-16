@@ -42,7 +42,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 export default function PlaylistDetailPage() {
   const params = useParams();
   const playlistId = typeof params.id === 'string' ? params.id : '';
-  const { playlists, songs, deletePlaylist, updatePlaylist } = useMusic();
+  const { playlists, songs, deletePlaylist, updatePlaylist, isHydrated } = useMusic();
   const router = useRouter();
   
   const playlist = playlists.find((p) => p.id === playlistId);
@@ -104,18 +104,28 @@ export default function PlaylistDetailPage() {
     }
   }
 
-  if (!playlist) {
-    // A página ainda pode estar carregando os dados ou a playlist não existe.
-    // notFound() seria prematuro aqui. Podemos mostrar um loader ou nada.
-    // Retornar um loader simples para evitar o notFound() durante a hidratação.
+  // Se os dados não foram carregados do localStorage e a playlist não foi encontrada,
+  // renderiza um placeholder mínimo para evitar o erro 404 prematuro.
+  if (!isHydrated && !playlist) {
     return (
         <div>
             <div className="relative h-60 w-full">
-                <Skeleton className="h-full w-full" />
                 <div className="absolute inset-0 bg-gradient-to-t from-background via-background/70 to-transparent" />
             </div>
         </div>
     );
+  }
+
+  // Se os dados foram carregados, mas a playlist ainda não existe, redireciona.
+  if (isHydrated && !playlist) {
+    notFound();
+  }
+
+  // Se a playlist existe, mas o nome ainda não foi carregado no estado de edição,
+  // isso pode indicar um carregamento inicial, então atualizamos o estado.
+  if (playlist && editedName !== playlist.name) {
+    setEditedName(playlist.name);
+    setEditedDescription(playlist.description || '');
   }
 
   return (

@@ -71,8 +71,8 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
   const [isHydrated, setIsHydrated] = useState(false);
 
   // Initialize with fallback state, and hydrate from localStorage in useEffect
-  const [songs, setSongs] = useState<Song[]>(initialSongs);
-  const [playlists, setPlaylists] = useState<Playlist[]>(initialPlaylists);
+  const [songs, setSongs] = useState<Song[]>([]);
+  const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [userData, setUserData] = useState<UserData>({ coins: 0, adFreeUntil: null });
   
   const [currentSong, setCurrentSong] = useState<Song | null>(null);
@@ -401,7 +401,7 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
     canCreatePlaylist,
     coins: userData.coins,
     spendCoins,
-    isAdFree,
+isAdFree,
     isHydrated
   };
 
