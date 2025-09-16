@@ -43,6 +43,15 @@ export function AddMusicButton() {
         });
     }
 
+    const readFileAsDataURL = (file: File): Promise<string> => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result as string);
+            reader.onerror = (error) => reject(error);
+            reader.readAsDataURL(file);
+        });
+    };
+
     const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const files = event.target.files;
         if (!files || files.length === 0) {
@@ -71,6 +80,7 @@ export function AddMusicButton() {
             }
             
             const duration = await getAudioDuration(file);
+            const audioSrc = await readFileAsDataURL(file);
 
             const newSong: Song = {
                 id: `${file.name}-${file.lastModified}`, // Create a semi-unique ID
@@ -78,7 +88,7 @@ export function AddMusicButton() {
                 artist: 'Desconhecido',
                 album: 'Importado',
                 duration: duration,
-                audioSrc: URL.createObjectURL(file),
+                audioSrc: audioSrc,
             };
             newSongs.push(newSong);
 
