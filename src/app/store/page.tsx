@@ -19,8 +19,8 @@ import {
 import { useState } from "react";
 
 const coinPackages = [
-    { name: "100 Coins", price: "R$ 1,99" },
-    { name: "250 Coins", price: "R$ 2,99" },
+    { name: "100 Coins", price: "$0.99" },
+    { name: "250 Coins", price: "$1.99" },
 ];
 
 export default function StorePage() {
@@ -138,7 +138,7 @@ export default function StorePage() {
                 </CardContent>
                 <CardFooter className="flex-col gap-2 items-stretch">
                      <Button className="w-full" disabled>
-                        Assine por R$ 5,99/mês (Em Breve)
+                        Assine por $1.99/mês (Em Breve)
                     </Button>
                 </CardFooter>
             </Card>
