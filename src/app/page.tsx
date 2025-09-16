@@ -15,15 +15,35 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { TimedAd } from '@/components/TimedAd';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function PlaylistsPage() {
-  const { playlists, canCreatePlaylist } = useMusic();
+  const { playlists, canCreatePlaylist, isHydrated } = useMusic();
   const [dialogOpen, setDialogOpen] = useState(false);
 
   const handleCreatePlaylistClick = () => {
     if (canCreatePlaylist.can) {
       setDialogOpen(true);
     }
+  }
+
+  if (!isHydrated) {
+    return (
+        <div className="p-4 sm:p-6">
+            <div className="flex justify-between items-center mb-6">
+                <h1 className="text-3xl font-bold">Playlists</h1>
+            </div>
+            <div className="flex justify-between items-center mb-6 mt-4">
+                <h2 className="text-xl font-semibold">Suas Playlists</h2>
+                <Skeleton className="h-9 w-32" />
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                <Skeleton className="w-full h-auto aspect-square" />
+                <Skeleton className="w-full h-auto aspect-square" />
+                <Skeleton className="w-full h-auto aspect-square" />
+            </div>
+        </div>
+    );
   }
   
   return (
