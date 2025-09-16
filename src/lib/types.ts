@@ -4,7 +4,7 @@ export interface Song {
   artist: string;
   album: string;
   duration: number; // in seconds
-  coverArt: string; // URL to image
+  coverArt?: string; // URL to image
   audioSrc: string; // URL to audio file
 }
 

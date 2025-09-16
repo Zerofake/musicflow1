@@ -13,6 +13,7 @@ const PLAYLISTS_STORAGE_KEY = 'musicflow-playlists';
 interface MusicContextType {
   // Songs
   songs: Song[];
+  addSongs: (newSongs: Song[]) => void;
   deleteSong: (songId: string) => void;
   
   // Playlists
@@ -224,6 +225,15 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
     }));
   }, []);
   
+  const addSongs = useCallback((newSongs: Song[]) => {
+    setSongs(prevSongs => {
+      const uniqueNewSongs = newSongs.filter(
+        newSong => !prevSongs.some(existingSong => existingSong.id === newSong.id)
+      );
+      return [...prevSongs, ...uniqueNewSongs];
+    });
+  }, []);
+  
   const deleteSong = useCallback((songId: string) => {
     // 1. Remove song from all playlists
     setPlaylists(prev => 
@@ -287,6 +297,7 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
 
   const value = {
     songs,
+    addSongs,
     deleteSong,
     playlists,
     createPlaylist,

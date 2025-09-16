@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Headphones, Music } from "lucide-react";
+import { Headphones, Cog } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LogoIcon } from "@/components/icons/LogoIcon";
 
 const navItems = [
   { href: "/", label: "Playlists", icon: LogoIcon },
   { href: "/songs", label: "Músicas", icon: Headphones },
+  { href: "/settings", label: "Ajustes", icon: Cog },
 ];
 
 export function BottomNavBar() {
