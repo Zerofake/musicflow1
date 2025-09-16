@@ -1,6 +1,7 @@
 "use client";
 
 import React from 'react';
+import { usePathname } from 'next/navigation';
 import { MusicPlayer } from '@/components/MusicPlayer';
 import { BottomNavBar } from '@/components/BottomNavBar';
 import { useMusic } from '@/hooks/useMusic';
@@ -9,19 +10,23 @@ import { AffiliateAd } from './AffiliateAd';
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const { currentSong, isAdFree } = useMusic();
+  const pathname = usePathname();
+
+  const showAds = !isAdFree && pathname !== '/store';
 
   // pb-28 (112px) for nav bar
-  // pb-28 + 24 (96px) for ads = pb-52 (208px)
   // pb-44 (176px) for music player
-  // pb-44 + 24 (96px) for ads = pb-68 (272px)
+  // Ads add 96px (24 * 4) of height (gap-2 = 8px + donation ad height + affiliate ad height)
   
   let paddingBottom = 'pb-28'; // Default for nav bar
-  if (currentSong && !isAdFree) {
-    paddingBottom = 'pb-[272px]'; // Player + Ads
-  } else if (currentSong && isAdFree) {
+  if (currentSong && showAds) {
+    paddingBottom = 'pb-[272px]'; // Player (176) + Ads (96)
+  } else if (currentSong && !showAds) {
     paddingBottom = 'pb-44'; // Player only
-  } else if (!currentSong && !isAdFree) {
-    paddingBottom = 'pb-52'; // Ads only
+  } else if (!currentSong && showAds) {
+    paddingBottom = 'pb-52'; // Ads (96) + Nav Bar (112) = 208px -> pb-52
+  } else {
+    paddingBottom = 'pb-28'; // Just the nav bar
   }
 
 
@@ -33,7 +38,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       
       {currentSong && <MusicPlayer />}
       
-      {!isAdFree && (
+      {showAds && (
         <div className="absolute bottom-24 left-4 right-4 z-10 flex flex-col gap-2">
           <PixDonation />
           <AffiliateAd />
