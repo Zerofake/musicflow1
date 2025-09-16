@@ -1,3 +1,4 @@
+
 "use client";
 
 import type { Song, Playlist, UserData } from '@/lib/types';
@@ -64,9 +65,12 @@ const getInitialState = <T,>(key: string, fallback: T): T => {
   };
 
 export function MusicProvider({ children }: { children: React.ReactNode }) {
-  const [songs, setSongs] = useState<Song[]>(() => getInitialState(SONGS_STORAGE_KEY, initialSongs));
-  const [playlists, setPlaylists] = useState<Playlist[]>(() => getInitialState(PLAYLISTS_STORAGE_KEY, initialPlaylists));
-  const [userData, setUserData] = useState<UserData>(() => getInitialState(USER_DATA_STORAGE_KEY, { coins: 0, adFreeUntil: null }));
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  // Initialize with fallback state, and hydrate from localStorage in useEffect
+  const [songs, setSongs] = useState<Song[]>(initialSongs);
+  const [playlists, setPlaylists] = useState<Playlist[]>(initialPlaylists);
+  const [userData, setUserData] = useState<UserData>({ coins: 0, adFreeUntil: null });
   
   const [currentSong, setCurrentSong] = useState<Song | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -78,31 +82,42 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
   const [isAdFree, setIsAdFree] = useState(false);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  // Hydrate from localStorage on client side
+  useEffect(() => {
+    setSongs(getInitialState(SONGS_STORAGE_KEY, initialSongs));
+    setPlaylists(getInitialState(PLAYLISTS_STORAGE_KEY, initialPlaylists));
+    setUserData(getInitialState(USER_DATA_STORAGE_KEY, { coins: 0, adFreeUntil: null }));
+    setIsHydrated(true);
+  }, []);
   
   // Effects to save data to localStorage
   useEffect(() => {
+    if (!isHydrated) return;
     try {
       window.localStorage.setItem(SONGS_STORAGE_KEY, JSON.stringify(songs));
     } catch (error) {
       console.error('Failed to save songs to localStorage:', error);
     }
-  }, [songs]);
+  }, [songs, isHydrated]);
 
   useEffect(() => {
+    if (!isHydrated) return;
     try {
       window.localStorage.setItem(PLAYLISTS_STORAGE_KEY, JSON.stringify(playlists));
     } catch (error) {
       console.error('Failed to save playlists to localStorage:', error);
     }
-  }, [playlists]);
+  }, [playlists, isHydrated]);
 
   useEffect(() => {
+    if (!isHydrated) return;
     try {
       window.localStorage.setItem(USER_DATA_STORAGE_KEY, JSON.stringify(userData));
     } catch (error) {
         console.error('Failed to save user data to localStorage:', error);
     }
-  }, [userData]);
+  }, [userData, isHydrated]);
 
   // Effect to check ad-free status
   useEffect(() => {
@@ -208,7 +223,7 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
     if (isPlaying) {
       audioRef.current.pause();
     } else {
-      audioRef.current.play().catch(e => console.error("Error playing audio:", e));;
+      audio.current.play().catch(e => console.error("Error playing audio:", e));;
     }
     setIsPlaying(prev => !prev);
   }, [isPlaying, currentSong]);
@@ -386,9 +401,16 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
     isAdFree,
   };
 
+  // Prevent rendering children until hydration is complete
+  if (!isHydrated) {
+    return null;
+  }
+
   return (
     <MusicContext.Provider value={value}>
       {children}
     </MusicContext.Provider>
   );
 }
+
+    
