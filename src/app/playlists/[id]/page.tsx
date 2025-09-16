@@ -45,7 +45,7 @@ export default function PlaylistDetailPage() {
   const { playlists, songs, deletePlaylist, updatePlaylist, isHydrated } = useMusic();
   const router = useRouter();
   
-  const playlist = playlists.find((p) => p.id === playlistId);
+  const playlist = isHydrated ? playlists.find((p) => p.id === playlistId) : undefined;
   
   const [playlistSongs, setPlaylistSongs] = useState<Song[]>([]);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -89,40 +89,6 @@ export default function PlaylistDetailPage() {
     dragItem.current = null;
     dragOverItem.current = null;
   };
-
-  if (!isHydrated) {
-    return (
-        <div>
-            <div className="relative h-60 w-full">
-                <Skeleton className="h-full w-full" />
-                <div className="absolute top-4 left-4">
-                    <Skeleton className="h-10 w-10 rounded-full" />
-                </div>
-                 <div className="absolute top-4 right-4">
-                    <Skeleton className="h-10 w-10 rounded-full" />
-                </div>
-                <div className="absolute bottom-0 left-0 p-4 sm:p-6">
-                    <Skeleton className="h-4 w-20 mb-2" />
-                    <Skeleton className="h-12 w-48" />
-                </div>
-            </div>
-            <div className="p-4 sm:p-6">
-                <div className="flex justify-end mb-4">
-                    <Skeleton className="h-9 w-36" />
-                </div>
-                <div className="space-y-2">
-                    <Skeleton className="h-16 w-full" />
-                    <Skeleton className="h-16 w-full" />
-                    <Skeleton className="h-16 w-full" />
-                </div>
-            </div>
-        </div>
-    );
-  }
-
-  if (!playlist) {
-    notFound();
-  }
   
   const handleDeletePlaylist = () => {
     if (playlistId) {
@@ -136,6 +102,45 @@ export default function PlaylistDetailPage() {
         updatePlaylist(playlistId, { name: editedName, description: editedDescription });
         setIsEditDialogOpen(false);
     }
+  }
+
+  if (!isHydrated) {
+    return (
+        <div>
+            <div className="relative h-60 w-full">
+                <Skeleton className="h-full w-full" />
+                <div className="absolute inset-0 bg-gradient-to-t from-background via-background/70 to-transparent" />
+                <div className="absolute top-4 left-4">
+                    <Button variant="ghost" size="icon" onClick={() => router.back()} className="bg-black/30 backdrop-blur-sm">
+                        <ArrowLeft className="h-5 w-5" />
+                    </Button>
+                </div>
+                 <div className="absolute top-4 right-4">
+                    <Button variant="ghost" size="icon" className="bg-black/30 backdrop-blur-sm">
+                        <MoreVertical className="h-5 w-5" />
+                    </Button>
+                </div>
+                <div className="absolute bottom-0 left-0 p-4 sm:p-6">
+                    <Skeleton className="h-4 w-20 mb-2" />
+                    <Skeleton className="h-12 w-48" />
+                </div>
+            </div>
+            <div className="p-4 sm:p-6">
+                <div className="flex justify-end mb-4">
+                    <Skeleton className="h-9 w-36" />
+                </div>
+                <div className="space-y-1">
+                    <Skeleton className="h-16 w-full" />
+                    <Skeleton className="h-16 w-full" />
+                    <Skeleton className="h-16 w-full" />
+                </div>
+            </div>
+        </div>
+    );
+  }
+
+  if (!playlist) {
+    notFound();
   }
 
   return (

@@ -26,26 +26,6 @@ export default function PlaylistsPage() {
       setDialogOpen(true);
     }
   }
-
-  if (!isHydrated) {
-    return (
-        <div className="p-4 sm:p-6">
-            <TimedAd />
-            <div className="flex justify-between items-center mb-6">
-                <h1 className="text-3xl font-bold">Playlists</h1>
-            </div>
-            <div className="flex justify-between items-center mb-6 mt-4">
-                <h2 className="text-xl font-semibold">Suas Playlists</h2>
-                <Skeleton className="h-9 w-32" />
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                <Skeleton className="w-full h-auto aspect-square" />
-                <Skeleton className="w-full h-auto aspect-square" />
-                <Skeleton className="w-full h-auto aspect-square" />
-            </div>
-        </div>
-    );
-  }
   
   return (
     <div className="p-4 sm:p-6">
@@ -61,21 +41,29 @@ export default function PlaylistsPage() {
               <TooltipTrigger asChild>
                 {/* O div wrapper é necessário para o tooltip funcionar em um botão desabilitado */}
                 <div className="inline-block"> 
-                  <Button onClick={handleCreatePlaylistClick} disabled={!canCreatePlaylist.can} size="sm">
+                  <Button onClick={handleCreatePlaylistClick} disabled={!isHydrated || !canCreatePlaylist.can} size="sm">
                     <Plus className="mr-2 h-4 w-4" /> Criar Playlist
                   </Button>
                 </div>
               </TooltipTrigger>
-              <TooltipContent>
-                <p>{canCreatePlaylist.message}</p>
-              </TooltipContent>
+              {isHydrated && (
+                <TooltipContent>
+                  <p>{canCreatePlaylist.message}</p>
+                </TooltipContent>
+              )}
             </Tooltip>
           </TooltipProvider>
       </div>
 
       <CreatePlaylistDialog open={dialogOpen} onOpenChange={setDialogOpen} />
       
-      {playlists.length > 0 ? (
+      {!isHydrated ? (
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+          <Skeleton className="w-full h-auto aspect-square" />
+          <Skeleton className="w-full h-auto aspect-square" />
+          <Skeleton className="w-full h-auto aspect-square" />
+        </div>
+      ) : playlists.length > 0 ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
           {playlists.map((playlist) => (
             <Link href={`/playlists/${playlist.id}`} key={playlist.id} className="group relative">

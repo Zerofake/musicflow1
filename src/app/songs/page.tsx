@@ -9,25 +9,18 @@ import { Skeleton } from '@/components/ui/skeleton';
 export default function AllSongsPage() {
   const { songs, isHydrated } = useMusic();
 
-  if (!isHydrated) {
-    return (
-        <div className="p-4 sm:p-6">
-            <h1 className="text-3xl font-bold mb-6">Todas as Músicas</h1>
-            <div className="space-y-2">
-                <Skeleton className="h-16 w-full" />
-                <Skeleton className="h-16 w-full" />
-                <Skeleton className="h-16 w-full" />
-                <Skeleton className="h-16 w-full" />
-                <Skeleton className="h-16 w-full" />
-            </div>
-        </div>
-    );
-  }
-  
   return (
     <div className="p-4 sm:p-6">
       <h1 className="text-3xl font-bold mb-6">Todas as Músicas</h1>
-      {songs.length > 0 ? (
+      {!isHydrated ? (
+        <div className="space-y-2">
+            <Skeleton className="h-16 w-full" />
+            <Skeleton className="h-16 w-full" />
+            <Skeleton className="h-16 w-full" />
+            <Skeleton className="h-16 w-full" />
+            <Skeleton className="h-16 w-full" />
+        </div>
+      ) : songs.length > 0 ? (
         <div className="space-y-2">
             {songs.map((song) => (
             <SongItem key={song.id} song={song} playlistSongs={songs} />
