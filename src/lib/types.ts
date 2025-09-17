@@ -9,7 +9,7 @@ export interface Song {
 }
 
 export interface Playlist {
-  id: number; // Auto-incremented primary key
+  id: string; // Auto-generated unique string ID
   name:string;
   description: string;
   coverArt: string; // URL to image

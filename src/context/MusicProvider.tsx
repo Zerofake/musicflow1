@@ -57,6 +57,7 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
     db.open()
       .then(() => {
         setIsDbOpen(true);
+        console.log("Database opened successfully");
       })
       .catch((err) => {
         console.error(`Failed to open db: ${err.stack || err}`);
@@ -189,28 +190,23 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
   const createPlaylist = useCallback(async (name: string, description: string): Promise<boolean> => {
     if (!canCreatePlaylist.can || !name || name.length > 200) return false;
     
-    const newPlaylist: Omit<Playlist, 'id'> = {
+    const newPlaylist: Playlist = {
+      id: `playlist_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
       name,
       description,
       songs: [],
       coverArt: `https://picsum.photos/seed/${Date.now()}/500/500`
     };
-    await db.playlists.add(newPlaylist as Playlist);
+    await db.playlists.add(newPlaylist);
     return true;
   }, [canCreatePlaylist.can]);
 
   const deletePlaylist = useCallback(async (playlistId: string) => {
-    const idAsNumber = Number(playlistId);
-    if (!isNaN(idAsNumber)) {
-      await db.playlists.delete(idAsNumber);
-    }
+    await db.playlists.delete(playlistId);
   }, []);
 
   const updatePlaylist = useCallback(async (playlistId: string, data: Partial<Omit<Playlist, 'id'>>) => {
-    const idAsNumber = Number(playlistId);
-    if (!isNaN(idAsNumber)) {
-      await db.playlists.update(idAsNumber, data);
-    }
+    await db.playlists.update(playlistId, data);
   }, []);
 
   const addSongsToPlaylist = useCallback(async (playlistId: string, newSongs: Song[]) => {
@@ -218,11 +214,8 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
     
     await addSongs(newSongs);
 
-    const playlistIdAsNumber = Number(playlistId);
-    if (isNaN(playlistIdAsNumber)) return;
-
     await db.transaction('rw', db.playlists, async () => {
-      const playlist = await db.playlists.get(playlistIdAsNumber);
+      const playlist = await db.playlists.get(playlistId);
       if (playlist) {
         const currentSongIds = new Set(playlist.songs);
         const newSongIds = newSongs.map(s => s.id).filter(id => !currentSongIds.has(id));
@@ -235,39 +228,30 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
   }, [addSongs]);
 
   const removeSongFromPlaylist = useCallback(async (playlistId: string, songId: string) => {
-    const playlistIdAsNumber = Number(playlistId);
-    if (isNaN(playlistIdAsNumber)) return;
-
     await db.transaction('rw', db.playlists, async () => {
-      const playlist = await db.playlists.get(playlistIdAsNumber);
+      const playlist = await db.playlists.get(playlistId);
       if (playlist) {
         const initialCount = playlist.songs.length;
         const updatedSongIds = playlist.songs.filter(id => id !== songId);
         if (updatedSongIds.length < initialCount) {
-          await db.playlists.update(playlistIdAsNumber, { songs: updatedSongIds });
+          await db.playlists.update(playlistId, { songs: updatedSongIds });
         }
       }
     });
   }, []);
   
   const moveSongToPlaylist = useCallback(async (targetPlaylistId: string, songId: string, sourcePlaylistId?: string) => {
-    const targetPlaylistIdNum = Number(targetPlaylistId);
-    if (isNaN(targetPlaylistIdNum)) return;
-    
     await db.transaction('rw', db.playlists, async () => {
-        const targetPlaylist = await db.playlists.get(targetPlaylistIdNum);
+        const targetPlaylist = await db.playlists.get(targetPlaylistId);
         if (targetPlaylist) {
             const songIds = new Set(targetPlaylist.songs);
             if (!songIds.has(songId)) {
-                await db.playlists.update(targetPlaylistIdNum, { songs: [...targetPlaylist.songs, songId]});
+                await db.playlists.update(targetPlaylistId, { songs: [...targetPlaylist.songs, songId]});
             }
         }
 
         if (sourcePlaylistId && sourcePlaylistId !== targetPlaylistId) {
-          const sourcePlaylistIdNum = Number(sourcePlaylistId);
-          if(!isNaN(sourcePlaylistIdNum)) {
             await removeSongFromPlaylist(sourcePlaylistId, songId);
-          }
         }
     });
     toast({

@@ -1,5 +1,5 @@
 
-import type { Song, Playlist } from './types';
+import type { Song } from './types';
 
 // This file is now primarily for seeding the database for the first time.
 // The data structures are kept simple and will be converted to the
@@ -25,18 +25,3 @@ export const initialSongs: Song[] = [
     audioSrc: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3',
   }
 ];
-
-export const initialPlaylists: Omit<Playlist, 'id'>[] = [
-    {
-      name: 'Downloads',
-      description: 'Músicas baixadas recentemente.',
-      coverArt: 'https://picsum.photos/seed/playlist1/500/500',
-      songs: ['SoundHelix-Song-2'],
-    },
-    {
-      name: 'Vibes de Academia',
-      description: 'Para dar aquele gás no treino.',
-      coverArt: 'https://picsum.photos/seed/playlist2/500/500',
-      songs: [],
-    },
-  ];

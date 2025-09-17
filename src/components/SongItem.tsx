@@ -140,12 +140,12 @@ export function SongItem({ song, playlistSongs, playlistId, draggable = false, .
             </DropdownMenuSubTrigger>
             <DropdownMenuPortal>
               <DropdownMenuSubContent>
-                {playlists.filter(p => p.id.toString() !== playlistId).map((p) => (
-                  <DropdownMenuItem key={p.id} onClick={() => handleMoveSong(p.id.toString())}>
+                {playlists.filter(p => p.id !== playlistId).map((p) => (
+                  <DropdownMenuItem key={p.id} onClick={() => handleMoveSong(p.id)}>
                     {p.name}
                   </DropdownMenuItem>
                 ))}
-                {playlists.length <= 1 && <DropdownMenuItem disabled>Nenhuma outra playlist</DropdownMenuItem>}
+                {playlists.filter(p => p.id !== playlistId).length === 0 && <DropdownMenuItem disabled>Nenhuma outra playlist</DropdownMenuItem>}
               </DropdownMenuSubContent>
             </DropdownMenuPortal>
           </DropdownMenuSub>

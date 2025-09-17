@@ -1,17 +1,17 @@
 import Dexie, { type Table } from 'dexie';
 import type { Song, Playlist, UserData } from './types';
-import { initialSongs, initialPlaylists } from './data';
+import { initialSongs } from './data';
 
 export class MusicFlowDB extends Dexie {
   songs!: Table<Song, string>; // Primary key is string (id)
-  playlists!: Table<Playlist, number>; // Primary key is number (auto-incremented id)
+  playlists!: Table<Playlist, string>; // Primary key is string (id)
   userData!: Table<UserData, string>; // Primary key is string ('main')
 
   constructor() {
     super('MusicFlowDB');
-    this.version(3).stores({
+    this.version(4).stores({
       songs: 'id, title, artist, album',
-      playlists: '++id, name',
+      playlists: 'id, name',
       userData: 'id',
     });
   }
@@ -23,13 +23,26 @@ db.on('populate', async () => {
     await db.songs.bulkAdd(initialSongs);
     
     // As playlists iniciais precisam ter os IDs das musicas iniciais
-    const modifiedInitialPlaylists = initialPlaylists.map(p => {
-        if (p.name === 'Downloads') {
-            return { ...p, songs: ['SoundHelix-Song-2'] };
-        }
-        return p;
-    });
+    const initialPlaylists: Omit<Playlist, 'id'>[] = [
+      {
+        name: 'Downloads',
+        description: 'Músicas baixadas recentemente.',
+        coverArt: 'https://picsum.photos/seed/playlist1/500/500',
+        songs: ['SoundHelix-Song-2'],
+      },
+      {
+        name: 'Vibes de Academia',
+        description: 'Para dar aquele gás no treino.',
+        coverArt: 'https://picsum.photos/seed/playlist2/500/500',
+        songs: [],
+      },
+    ];
 
-    await db.playlists.bulkAdd(modifiedInitialPlaylists as any);
+    const playlistsWithIds = initialPlaylists.map(p => ({
+      ...p,
+      id: `playlist_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`
+    }));
+
+    await db.playlists.bulkAdd(playlistsWithIds as any);
     await db.userData.add({ id: 'main', coins: 0, adFreeUntil: null });
 });

@@ -44,7 +44,7 @@ export default function PlaylistDetailPage() {
   const { playlists, deletePlaylist, updatePlaylist, isHydrated, songs: allSongs } = useMusic();
   const router = useRouter();
   
-  const playlist = playlists.find((p) => p.id.toString() === playlistId);
+  const playlist = playlists.find((p) => p.id === playlistId);
 
   const playlistSongs = useMemo(() => {
     if (!playlist || !allSongs) return [];
