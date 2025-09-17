@@ -26,6 +26,34 @@ export default function PlaylistsPage() {
     }
   }
 
+  const CreateButton = () => {
+    const button = (
+       <Button onClick={handleCreatePlaylistClick} disabled={!isHydrated || !canCreatePlaylist.can} size="sm">
+          <Plus className="mr-2 h-4 w-4" /> Criar Playlist
+        </Button>
+    );
+
+    if (isHydrated && !canCreatePlaylist.can) {
+      return (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              {/* O div wrapper é necessário para o tooltip funcionar em um botão desabilitado */}
+              <div className="inline-block">
+                {button}
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{canCreatePlaylist.message}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      );
+    }
+
+    return button;
+  };
+
   return (
     <div className="p-4 sm:p-6">
       <TimedAd />
@@ -35,23 +63,7 @@ export default function PlaylistsPage() {
 
       <div className="flex justify-between items-center mb-6 mt-4">
           <h2 className="text-xl font-semibold">Suas Playlists</h2>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                {/* O div wrapper é necessário para o tooltip funcionar em um botão desabilitado */}
-                <div className="inline-block"> 
-                  <Button onClick={handleCreatePlaylistClick} disabled={!isHydrated || !canCreatePlaylist.can} size="sm">
-                    <Plus className="mr-2 h-4 w-4" /> Criar Playlist
-                  </Button>
-                </div>
-              </TooltipTrigger>
-              {isHydrated && !canCreatePlaylist.can && (
-                <TooltipContent>
-                  <p>{canCreatePlaylist.message}</p>
-                </TooltipContent>
-              )}
-            </Tooltip>
-          </TooltipProvider>
+          <CreateButton />
       </div>
 
       <CreatePlaylistDialog open={dialogOpen} onOpenChange={setDialogOpen} />
@@ -70,7 +82,7 @@ export default function PlaylistsPage() {
                         fill
                         className="object-cover transition-transform group-hover:scale-105"
                         data-ai-hint="music playlist cover"
-                        priority={playlist.id === 1 || playlist.id === 2}
+                        priority={playlist.id === '1' || playlist.id === '2'}
                         />
                     ) : (
                         <Music className="h-12 w-12 text-muted-foreground" />
