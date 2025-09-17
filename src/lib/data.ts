@@ -12,7 +12,7 @@ export const initialSongs: Song[] = [
     artist: 'Orion',
     album: 'Galáxias',
     duration: 185,
-    coverArt: 'https://picsum.photos/seed/music1/500/500',
+    coverArt: 'https://placehold.co/500x500/000000/FFFFFF/png?text=E',
     audioSrc: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
   },
   {
@@ -21,7 +21,7 @@ export const initialSongs: Song[] = [
     artist: 'Luna',
     album: 'Céu Estrelado',
     duration: 210,
-    coverArt: 'https://picsum.photos/seed/music2/500/500',
+    coverArt: 'https://placehold.co/500x500/000000/FFFFFF/png?text=R',
     audioSrc: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3',
   }
 ];

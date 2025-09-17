@@ -195,7 +195,7 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
       name,
       description,
       songs: [],
-      coverArt: `https://picsum.photos/seed/${Date.now()}/500/500`
+      coverArt: `https://placehold.co/500x500/000000/FFFFFF/png?text=${encodeURIComponent(name.charAt(0))}`
     };
     await db.playlists.add(newPlaylist);
     return true;

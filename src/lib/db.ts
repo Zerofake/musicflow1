@@ -27,13 +27,13 @@ db.on('populate', async () => {
       {
         name: 'Downloads',
         description: 'Músicas baixadas recentemente.',
-        coverArt: 'https://picsum.photos/seed/playlist1/500/500',
+        coverArt: 'https://placehold.co/500x500/000000/FFFFFF/png?text=D',
         songs: ['SoundHelix-Song-2'],
       },
       {
         name: 'Vibes de Academia',
         description: 'Para dar aquele gás no treino.',
-        coverArt: 'https://picsum.photos/seed/playlist2/500/500',
+        coverArt: 'https://placehold.co/500x500/000000/FFFFFF/png?text=V',
         songs: [],
       },
     ];
