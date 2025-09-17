@@ -20,7 +20,7 @@ export class MusicFlowDB extends Dexie {
 export const db = new MusicFlowDB();
 
 const placeholderCover = (char: string) => {
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="500" height="500" viewBox="0 0 500 500"><rect width="500" height="500" fill="#000000"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="monospace" font-size="250" fill="#FFFFFF">${encodeURIComponent(char)}</text></svg>`;
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="500" height="500" viewBox="0 0 500 500"><rect width="500" height="500" fill="#000000"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="monospace" font-size="250" fill="#FFFFFF">${encodeURIComponent(char.charAt(0).toUpperCase())}</text></svg>`;
     return `data:image/svg+xml;base64,${btoa(svg)}`;
 }
 

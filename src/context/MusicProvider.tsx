@@ -50,6 +50,11 @@ interface MusicContextType {
 
 export const MusicContext = createContext<MusicContextType | null>(null);
 
+const placeholderCover = (char: string) => {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="500" height="500" viewBox="0 0 500 500"><rect width="500" height="500" fill="#000000"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="monospace" font-size="250" fill="#FFFFFF">${encodeURIComponent(char.charAt(0).toUpperCase())}</text></svg>`;
+  return `data:image/svg+xml;base64,${btoa(svg)}`;
+}
+
 export function MusicProvider({ children }: { children: React.ReactNode }) {
   const [isDbOpen, setIsDbOpen] = useState(false);
 
@@ -194,16 +199,12 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
   const createPlaylist = useCallback(async (name: string, description: string): Promise<boolean> => {
     if (!canCreatePlaylist.can || !name || name.length > 200) return false;
     
-    // Simple placeholder SVG as a string
-    const svgString = `<svg xmlns="http://www.w3.org/2000/svg" width="500" height="500" viewBox="0 0 500 500"><rect width="500" height="500" fill="#000000"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="monospace" font-size="250" fill="#FFFFFF">${encodeURIComponent(name.charAt(0))}</text></svg>`;
-    const coverArt = `data:image/svg+xml;base64,${btoa(svgString)}`;
-
     const newPlaylist: Playlist = {
       id: `playlist_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
       name,
       description,
       songs: [],
-      coverArt
+      coverArt: placeholderCover(name)
     };
     await db.playlists.add(newPlaylist);
     return true;
