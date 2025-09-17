@@ -5,6 +5,7 @@ import type { Song, Playlist, UserData } from '@/lib/types';
 import { db } from '@/lib/db';
 import { useLiveQuery } from 'dexie-react-hooks';
 import React, { createContext, useState, useRef, useEffect, useCallback } from 'react';
+import { useToast } from '@/hooks/use-toast';
 
 const MAX_TOTAL_PLAYLISTS = 12;
 
@@ -62,7 +63,8 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
   const [duration, setDuration] = useState(0);
   const [isRepeating, setIsRepeating] = useState(false);
   const [isAdFree, setIsAdFree] = useState(false);
-
+  
+  const { toast } = useToast();
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const isHydrated = allSongs !== undefined && playlists !== undefined && userData !== undefined;
@@ -161,8 +163,17 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
 
   const addSongs = useCallback(async (newSongs: Song[]) => {
     if (newSongs.length === 0) return;
-    await db.songs.bulkAdd(newSongs, { allKeys: true });
-  }, []);
+    try {
+        await db.songs.bulkAdd(newSongs);
+    } catch (error) {
+        console.error("Failed to add songs:", error);
+        toast({
+            variant: "destructive",
+            title: "Erro ao Adicionar Músicas",
+            description: "Algumas músicas podem não ter sido salvas. Tente novamente.",
+        });
+    }
+  }, [toast]);
 
   const createPlaylist = useCallback(async (name: string, description: string): Promise<boolean> => {
     if (!canCreatePlaylist.can || !name || name.length > 200) return false;
@@ -194,13 +205,11 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
   const addSongsToPlaylist = useCallback(async (playlistId: string, newSongs: Song[]) => {
     if (newSongs.length === 0) return;
     
-    // First, ensure all songs are in the central songs table
     await addSongs(newSongs);
 
     const playlistIdAsNumber = Number(playlistId);
     if (isNaN(playlistIdAsNumber)) return;
 
-    // Then, add song IDs to the playlist
     await db.transaction('rw', db.playlists, async () => {
       const playlist = await db.playlists.get(playlistIdAsNumber);
       if (playlist) {
@@ -234,19 +243,34 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
     const targetPlaylistIdNum = Number(targetPlaylistId);
     if (isNaN(targetPlaylistIdNum)) return;
     
-    // Add song ID to the target playlist
+    // Use a transaction to ensure atomicity
     await db.transaction('rw', db.playlists, async () => {
-        const playlist = await db.playlists.get(targetPlaylistIdNum);
-        if (playlist && !playlist.songs.includes(songId)) {
-            await db.playlists.update(targetPlaylistIdNum, { songs: [...playlist.songs, songId]});
+        // Add to target playlist
+        const targetPlaylist = await db.playlists.get(targetPlaylistIdNum);
+        if (targetPlaylist) {
+            const songIds = new Set(targetPlaylist.songs);
+            if (!songIds.has(songId)) {
+                await db.playlists.update(targetPlaylistIdNum, { songs: [...targetPlaylist.songs, songId]});
+            }
+        }
+
+        // Remove from source playlist if it's a different playlist
+        if (sourcePlaylistId && sourcePlaylistId !== targetPlaylistId) {
+          const sourcePlaylistIdNum = Number(sourcePlaylistId);
+          if(!isNaN(sourcePlaylistIdNum)) {
+            const sourcePlaylist = await db.playlists.get(sourcePlaylistIdNum);
+            if (sourcePlaylist) {
+              const updatedSongs = sourcePlaylist.songs.filter(sId => sId !== songId);
+              await db.playlists.update(sourcePlaylistIdNum, { songs: updatedSongs });
+            }
+          }
         }
     });
-
-    // Remove from source playlist if it's a different playlist
-    if (sourcePlaylistId && sourcePlaylistId !== targetPlaylistId) {
-      await removeSongFromPlaylist(sourcePlaylistId, songId);
-    }
-  }, [removeSongFromPlaylist]);
+    toast({
+        title: "Música Movida",
+        description: "A música foi movida para a nova playlist.",
+    });
+  }, [toast]);
 
   const deleteSong = useCallback(async (songId: string) => {
     if (currentSong?.id === songId) {
@@ -258,10 +282,8 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
         setIsPlaying(false);
     }
 
-    // Remove from the central songs table
     await db.songs.delete(songId);
 
-    // Remove the song ID from all playlists
     await db.transaction('rw', db.playlists, async () => {
         const allPlaylists = await db.playlists.toArray();
         for (const playlist of allPlaylists) {
@@ -273,7 +295,6 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
         }
     });
     
-    // Update the current playing queue
     setQueue(prev => prev.filter(s => s.id !== songId));
 
   }, [currentSong]);

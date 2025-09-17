@@ -60,7 +60,9 @@ export function SongItem({ song, playlistSongs, playlistId, draggable = false, .
   };
 
   const handleMoveSong = (targetPlaylistId: string) => {
-    moveSongToPlaylist(targetPlaylistId, song.id, playlistId);
+    if (song.id) {
+        moveSongToPlaylist(targetPlaylistId, song.id, playlistId);
+    }
   };
   
   const handleRemoveFromPlaylist = () => {
@@ -143,7 +145,7 @@ export function SongItem({ song, playlistSongs, playlistId, draggable = false, .
                     {p.name}
                   </DropdownMenuItem>
                 ))}
-                {playlists.length === 0 && <DropdownMenuItem disabled>Nenhuma outra playlist</DropdownMenuItem>}
+                {playlists.length <= 1 && <DropdownMenuItem disabled>Nenhuma outra playlist</DropdownMenuItem>}
               </DropdownMenuSubContent>
             </DropdownMenuPortal>
           </DropdownMenuSub>
@@ -163,21 +165,21 @@ export function SongItem({ song, playlistSongs, playlistId, draggable = false, .
     </div>
 
     <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Excluir Música?</AlertDialogTitle>
-          <AlertDialogDescription>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir Música?</AlertDialogTitle>
+            <AlertDialogDescription>
             A música "{song.title}" será removida permanentemente de todo o aplicativo. Esta ação não pode ser desfeita.
           </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Cancelar</AlertDialogCancel>
-          <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-            Excluir
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }
