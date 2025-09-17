@@ -8,12 +8,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Play, Plus, Info, Music } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CreatePlaylistDialog } from '@/components/CreatePlaylistDialog';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip"
 import { TimedAd } from '@/components/TimedAd';
 
 export default function PlaylistsPage() {
@@ -35,26 +29,9 @@ export default function PlaylistsPage() {
 
       <div className="flex justify-between items-center mb-6 mt-4">
           <h2 className="text-xl font-semibold">Suas Playlists</h2>
-          {isHydrated && canCreatePlaylist.can ? (
-            <Button onClick={handleCreatePlaylistClick} size="sm">
+          <Button onClick={handleCreatePlaylistClick} size="sm" disabled={!isHydrated}>
               <Plus className="mr-2 h-4 w-4" /> Criar Playlist
-            </Button>
-          ) : (
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div className="inline-block"> 
-                    <Button size="sm" disabled>
-                      <Plus className="mr-2 h-4 w-4" /> Criar Playlist
-                    </Button>
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>{isHydrated ? canCreatePlaylist.message : "Carregando..."}</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          )}
+          </Button>
       </div>
 
       <CreatePlaylistDialog open={dialogOpen} onOpenChange={setDialogOpen} />
