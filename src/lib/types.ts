@@ -9,7 +9,7 @@ export interface Song {
 }
 
 export interface Playlist {
-  id: string; // Can be a timestamp or other unique string
+  id: number; // Auto-incremented primary key
   name:string;
   description: string;
   coverArt: string; // URL to image
@@ -21,3 +21,5 @@ export interface UserData {
   coins: number;
   adFreeUntil: number | null;
 }
+
+    

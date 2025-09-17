@@ -43,7 +43,7 @@ export default function PlaylistDetailPage() {
   const { playlists, deletePlaylist, updatePlaylist, isHydrated } = useMusic();
   const router = useRouter();
   
-  const playlist = playlists.find((p) => p.id === playlistId);
+  const playlist = playlists.find((p) => p.id.toString() === playlistId);
   
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -245,3 +245,5 @@ export default function PlaylistDetailPage() {
     </div>
   );
 }
+
+    

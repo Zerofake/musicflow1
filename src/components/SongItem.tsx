@@ -138,8 +138,8 @@ export function SongItem({ song, playlistSongs, playlistId, draggable = false, .
             </DropdownMenuSubTrigger>
             <DropdownMenuPortal>
               <DropdownMenuSubContent>
-                {playlists.filter(p => p.id !== playlistId).map((p) => (
-                  <DropdownMenuItem key={p.id} onClick={() => handleMoveSongToPlaylist(p.id)}>
+                {playlists.filter(p => p.id.toString() !== playlistId).map((p) => (
+                  <DropdownMenuItem key={p.id} onClick={() => handleMoveSongToPlaylist(p.id.toString())}>
                     {p.name}
                   </DropdownMenuItem>
                 ))}
