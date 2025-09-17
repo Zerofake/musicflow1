@@ -1,7 +1,6 @@
 
 import Dexie, { type Table } from 'dexie';
 import type { Song, Playlist, UserData } from './types';
-import { initialSongs } from './data';
 
 export class MusicFlowDB extends Dexie {
   songs!: Table<Song, string>; // Primary key is string (id)
@@ -9,9 +8,9 @@ export class MusicFlowDB extends Dexie {
   userData!: Table<UserData, string>; // Primary key is string ('main')
 
   constructor() {
-    super('MusicFlowDB');
-    // Version 5: Removes onpopulate to handle seeding in the provider, fixing persistent data issues.
-    this.version(5).stores({
+    super('MusicFlowDB_v2'); // Renamed to force a clean slate
+    // Version 1 for the new DB name
+    this.version(1).stores({
       songs: 'id, title, artist, album',
       playlists: 'id, name',
       userData: 'id',
