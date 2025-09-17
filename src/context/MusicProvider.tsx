@@ -323,20 +323,26 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
     const store = tx.objectStore(PLAYLISTS_STORE_NAME);
     const req = store.get(playlistId);
 
-    req.onsuccess = () => {
-        const playlist = req.result;
-        if(playlist) {
-            const currentPlaylistSongs = playlist.songs || [];
-            const uniqueNewSongsForPlaylist = newSongs.filter(
-                newSong => !currentPlaylistSongs.some(existingSong => existingSong.id === newSong.id)
-            );
-            if (uniqueNewSongsForPlaylist.length > 0) {
-                const updatedPlaylist = { ...playlist, songs: [...currentPlaylistSongs, ...uniqueNewSongsForPlaylist] };
-                store.put(updatedPlaylist);
-                setPlaylists(prev => prev.map(p => p.id === playlistId ? updatedPlaylist : p));
-            }
-        }
-    };
+    return new Promise<void>((resolve, reject) => {
+      req.onsuccess = () => {
+          const playlist = req.result;
+          if(playlist) {
+              const currentPlaylistSongs = playlist.songs || [];
+              const uniqueNewSongsForPlaylist = newSongs.filter(
+                  newSong => !currentPlaylistSongs.some(existingSong => existingSong.id === newSong.id)
+              );
+              if (uniqueNewSongsForPlaylist.length > 0) {
+                  const updatedPlaylist = { ...playlist, songs: [...currentPlaylistSongs, ...uniqueNewSongsForPlaylist] };
+                  store.put(updatedPlaylist);
+                  setPlaylists(prev => prev.map(p => p.id === playlistId ? updatedPlaylist : p));
+              }
+              tx.oncomplete = () => resolve();
+          } else {
+            reject('Playlist not found');
+          }
+      };
+      req.onerror = () => reject(req.error);
+    });
   }, [addSongs]);
 
   const removeSongFromPlaylist = useCallback(async (playlistId: string, songId: string) => {
@@ -345,23 +351,29 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
     const store = tx.objectStore(PLAYLISTS_STORE_NAME);
     const req = store.get(playlistId);
     
-    req.onsuccess = () => {
-        const playlist = req.result;
-        if(playlist) {
-            const updatedSongs = playlist.songs?.filter(s => s.id !== songId) || [];
-            const updatedPlaylist = { ...playlist, songs: updatedSongs };
-            store.put(updatedPlaylist);
-            setPlaylists(prev => prev.map(p => p.id === playlistId ? updatedPlaylist : p));
-        }
-    };
+    return new Promise<void>((resolve, reject) => {
+        req.onsuccess = () => {
+            const playlist = req.result;
+            if(playlist) {
+                const updatedSongs = playlist.songs?.filter(s => s.id !== songId) || [];
+                const updatedPlaylist = { ...playlist, songs: updatedSongs };
+                store.put(updatedPlaylist);
+                setPlaylists(prev => prev.map(p => p.id === playlistId ? updatedPlaylist : p));
+                tx.oncomplete = () => resolve();
+            } else {
+                reject('Playlist not found');
+            }
+        };
+        req.onerror = () => reject(req.error);
+    });
   }, []);
 
-  const moveSongToPlaylist = useCallback(async (playlistId: string, song: Song, source: 'songs' | { playlistId: string }) => {
-    // 1. Add song to the target playlist
-    await addSongsToPlaylist(playlistId, [song]);
+  const moveSongToPlaylist = useCallback(async (targetPlaylistId: string, song: Song, source: 'songs' | { playlistId: string }) => {
+    // 1. Add song to the target playlist. It will only add if not already present.
+    await addSongsToPlaylist(targetPlaylistId, [song]);
 
-    // 2. Remove song from the source playlist (if it's from a playlist)
-    if (source !== 'songs') {
+    // 2. If the song came from another playlist, remove it from the source.
+    if (source !== 'songs' && source.playlistId !== targetPlaylistId) {
         await removeSongFromPlaylist(source.playlistId, song.id);
     }
   }, [addSongsToPlaylist, removeSongFromPlaylist]);
