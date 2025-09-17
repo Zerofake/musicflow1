@@ -3,18 +3,11 @@ import './globals.css';
 import { MusicProvider } from '@/context/MusicProvider';
 import { AppShell } from '@/components/AppShell';
 import { Toaster } from '@/components/ui/toaster';
-import { db } from '@/lib/db';
 
 export const metadata: Metadata = {
   title: 'Music Flow',
   description: 'Seu player de música offline com sugestões inteligentes.',
 };
-
-// Open the database to allow Dexie to initialize and populate if needed.
-db.open().catch((err) => {
-    console.error(`Failed to open db: ${err.stack || err}`);
-});
-
 
 export default function RootLayout({
   children,

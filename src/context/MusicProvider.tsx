@@ -51,9 +51,23 @@ interface MusicContextType {
 export const MusicContext = createContext<MusicContextType | null>(null);
 
 export function MusicProvider({ children }: { children: React.ReactNode }) {
-  const allSongs = useLiveQuery(() => db.songs.toArray(), []);
-  const playlists = useLiveQuery(() => db.playlists.toArray(), []);
-  const userData = useLiveQuery(() => db.userData.get('main'), []);
+  const [dbReady, setDbReady] = useState(false);
+
+  useEffect(() => {
+    const openDb = async () => {
+      try {
+        await db.open();
+        setDbReady(true);
+      } catch (err) {
+        console.error(`Failed to open db: ${err.stack || err}`);
+      }
+    };
+    openDb();
+  }, []);
+
+  const allSongs = useLiveQuery(() => dbReady ? db.songs.toArray() : [], [dbReady]);
+  const playlists = useLiveQuery(() => dbReady ? db.playlists.toArray() : [], [dbReady]);
+  const userData = useLiveQuery(() => dbReady ? db.userData.get('main') : undefined, [dbReady]);
 
   const [currentSong, setCurrentSong] = useState<Song | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -106,7 +120,6 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
     setCurrentSongIndex(songIndex);
 
     if (songIndex === -1 && song) {
-        // If song is not in queue, just play it and set it as the whole queue
         setQueue([song]);
         setCurrentSongIndex(0);
     } else if (songIndex === -1 && !song) {
@@ -243,9 +256,7 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
     const targetPlaylistIdNum = Number(targetPlaylistId);
     if (isNaN(targetPlaylistIdNum)) return;
     
-    // Use a transaction to ensure atomicity
     await db.transaction('rw', db.playlists, async () => {
-        // Add to target playlist
         const targetPlaylist = await db.playlists.get(targetPlaylistIdNum);
         if (targetPlaylist) {
             const songIds = new Set(targetPlaylist.songs);
@@ -254,15 +265,10 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
             }
         }
 
-        // Remove from source playlist if it's a different playlist
         if (sourcePlaylistId && sourcePlaylistId !== targetPlaylistId) {
           const sourcePlaylistIdNum = Number(sourcePlaylistId);
           if(!isNaN(sourcePlaylistIdNum)) {
-            const sourcePlaylist = await db.playlists.get(sourcePlaylistIdNum);
-            if (sourcePlaylist) {
-              const updatedSongs = sourcePlaylist.songs.filter(sId => sId !== songId);
-              await db.playlists.update(sourcePlaylistIdNum, { songs: updatedSongs });
-            }
+            await removeSongFromPlaylist(sourcePlaylistId, songId);
           }
         }
     });
@@ -270,7 +276,7 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
         title: "Música Movida",
         description: "A música foi movida para a nova playlist.",
     });
-  }, [toast]);
+  }, [toast, removeSongFromPlaylist]);
 
   const deleteSong = useCallback(async (songId: string) => {
     if (currentSong?.id === songId) {
