@@ -2,17 +2,11 @@
 "use client";
 
 import type { Song, Playlist, UserData } from '@/lib/types';
-import { initialSongs, initialPlaylists } from '@/lib/data';
+import { db } from '@/lib/db';
+import { useLiveQuery } from 'dexie-react-hooks';
 import React, { createContext, useState, useRef, useEffect, useCallback } from 'react';
 
 const MAX_TOTAL_PLAYLISTS = 12;
-
-// IndexedDB Config
-const DB_NAME = 'MusicFlowDB';
-const DB_VERSION = 1;
-const SONGS_STORE_NAME = 'songs';
-const PLAYLISTS_STORE_NAME = 'playlists';
-const USER_DATA_STORE_NAME = 'userData';
 
 interface MusicContextType {
   // Songs
@@ -54,46 +48,12 @@ interface MusicContextType {
 
 export const MusicContext = createContext<MusicContextType | null>(null);
 
-// --- IndexedDB Helper Functions ---
-const openDB = (): Promise<IDBDatabase> => {
-    return new Promise((resolve, reject) => {
-        const request = indexedDB.open(DB_NAME, DB_VERSION);
-        request.onupgradeneeded = (event) => {
-            const db = (event.target as IDBOpenDBRequest).result;
-            if (!db.objectStoreNames.contains(SONGS_STORE_NAME)) {
-                db.createObjectStore(SONGS_STORE_NAME, { keyPath: 'id' });
-            }
-            if (!db.objectStoreNames.contains(PLAYLISTS_STORE_NAME)) {
-                db.createObjectStore(PLAYLISTS_STORE_NAME, { keyPath: 'id' });
-            }
-            if (!db.objectStoreNames.contains(USER_DATA_STORE_NAME)) {
-                db.createObjectStore(USER_DATA_STORE_NAME, { keyPath: 'id' });
-            }
-        };
-        request.onsuccess = (event) => resolve((event.target as IDBOpenDBRequest).result);
-        request.onerror = (event) => reject((event.target as IDBOpenDBRequest).error);
-    });
-};
-
-const dbRequest = <T>(storeName: string, type: IDBTransactionMode, action: (store: IDBObjectStore) => IDBRequest): Promise<T> => {
-    return openDB().then(db => {
-        return new Promise<T>((resolve, reject) => {
-            const transaction = db.transaction(storeName, type);
-            const store = transaction.objectStore(storeName);
-            const request = action(store);
-            request.onsuccess = () => resolve(request.result);
-            request.onerror = () => reject(request.error);
-        });
-    });
-};
-
-
 export function MusicProvider({ children }: { children: React.ReactNode }) {
-  const [isHydrated, setIsHydrated] = useState(false);
-  const [songs, setSongs] = useState<Song[]>([]);
-  const [playlists, setPlaylists] = useState<Playlist[]>([]);
-  const [userData, setUserData] = useState<UserData>({ id: 'main', coins: 0, adFreeUntil: null });
-  
+  // Use Dexie's live query hook to keep state in sync with the database
+  const songs = useLiveQuery(() => db.songs.toArray(), []);
+  const playlists = useLiveQuery(() => db.playlists.toArray(), []);
+  const userData = useLiveQuery(() => db.userData.get('main'), []);
+
   const [currentSong, setCurrentSong] = useState<Song | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [queue, setQueue] = useState<Song[]>([]);
@@ -105,89 +65,30 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Effect to hydrate from IndexedDB
+  const isHydrated = songs !== undefined && playlists !== undefined && userData !== undefined;
+  const coins = userData?.coins ?? 0;
+
+  // Effect to handle ad-free status based on userData
   useEffect(() => {
-    const hydrate = async () => {
-        if (typeof window === 'undefined') return;
-
-        try {
-            const db = await openDB();
-            const tx = db.transaction([SONGS_STORE_NAME, PLAYLISTS_STORE_NAME, USER_DATA_STORE_NAME], 'readonly');
-            
-            const songsStore = tx.objectStore(SONGS_STORE_NAME);
-            const playlistsStore = tx.objectStore(PLAYLISTS_STORE_NAME);
-            const userDataStore = tx.objectStore(USER_DATA_STORE_NAME);
-
-            const songsReq = songsStore.getAll();
-            const playlistsReq = playlistsStore.getAll();
-            const userDataReq = userDataStore.get('main');
-            
-            const [dbSongs, dbPlaylists, dbUserData] = await Promise.all([
-                new Promise<Song[]>(res => { songsReq.onsuccess = () => res(songsReq.result); }),
-                new Promise<Playlist[]>(res => { playlistsReq.onsuccess = () => res(playlistsReq.result); }),
-                new Promise<UserData | undefined>(res => { userDataReq.onsuccess = () => res(userDataReq.result); }),
-            ]);
-
-            // First time initialization
-            if (dbSongs.length === 0 && dbPlaylists.length === 0) {
-                const writeTx = db.transaction([SONGS_STORE_NAME, PLAYLISTS_STORE_NAME], 'readwrite');
-                const initSongsTx = writeTx.objectStore(SONGS_STORE_NAME);
-                initialSongs.forEach(song => initSongsTx.add(song));
-
-                const initPlaylistsTx = writeTx.objectStore(PLAYLISTS_STORE_NAME);
-                initialPlaylists.forEach(pl => initPlaylistsTx.add(pl));
-                
-                await new Promise<void>(resolve => { writeTx.oncomplete = () => resolve(); });
-
-                setSongs(initialSongs);
-                setPlaylists(initialPlaylists);
-            } else {
-                setSongs(dbSongs);
-                setPlaylists(dbPlaylists);
-            }
-
-            if(dbUserData) {
-                setUserData(dbUserData);
-            } else {
-                const initUserTx = db.transaction(USER_DATA_STORE_NAME, 'readwrite');
-                const userStore = initUserTx.objectStore(USER_DATA_STORE_NAME);
-                const initialUserData = { id: 'main', coins: 0, adFreeUntil: null };
-                userStore.add(initialUserData);
-                await new Promise<void>(resolve => { initUserTx.oncomplete = () => resolve(); });
-                setUserData(initialUserData);
-            }
-            
-            setIsHydrated(true);
-
-        } catch (error) {
-            console.error("Failed to hydrate from IndexedDB:", error);
-        }
-    };
-    hydrate();
-  }, []);
-
-  // Ad status check
-  useEffect(() => {
+    if (!userData) return;
     const checkAdStatus = () => {
-        const now = new Date().getTime();
-        if (userData.adFreeUntil && now < userData.adFreeUntil) {
-            setIsAdFree(true);
-        } else if (isAdFree) {
-            setIsAdFree(false);
-            setUserData(prev => ({...prev, adFreeUntil: null}));
-        }
+      const now = new Date().getTime();
+      const adFree = userData.adFreeUntil ? now < userData.adFreeUntil : false;
+      if (adFree !== isAdFree) {
+        setIsAdFree(adFree);
+      }
     };
     checkAdStatus();
     const interval = setInterval(checkAdStatus, 10000);
     return () => clearInterval(interval);
-  }, [userData.adFreeUntil, isAdFree]);
+  }, [userData, isAdFree]);
 
   const canCreatePlaylist = React.useMemo(() => ({
-    can: playlists.length < MAX_TOTAL_PLAYLISTS,
-    message: playlists.length < MAX_TOTAL_PLAYLISTS 
-      ? `Você pode criar até ${MAX_TOTAL_PLAYLISTS} playlists.` 
+    can: (playlists?.length ?? 0) < MAX_TOTAL_PLAYLISTS,
+    message: (playlists?.length ?? 0) < MAX_TOTAL_PLAYLISTS
+      ? `Você pode criar até ${MAX_TOTAL_PLAYLISTS} playlists.`
       : `Você atingiu o limite máximo de ${MAX_TOTAL_PLAYLISTS} playlists.`
-  }), [playlists.length]);
+  }), [playlists?.length]);
 
 
   const playSong = useCallback((song: Song, songQueue: Song[] = []) => {
@@ -195,11 +96,11 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
       audioRef.current.pause();
     }
     setCurrentSong(song);
-    const newQueue = songQueue.length > 0 ? songQueue : [...songs];
+    const newQueue = songQueue.length > 0 ? songQueue : (songs || []);
     setQueue(newQueue);
     const songIndex = newQueue.findIndex(s => s.id === song.id);
     setCurrentSongIndex(songIndex);
-    
+
     if (songIndex === -1) {
         setCurrentSong(null);
         setIsPlaying(false);
@@ -208,7 +109,7 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
 
     const audio = audioRef.current || new Audio();
     if (!audioRef.current) audioRef.current = audio;
-    
+
     audio.src = song.audioSrc;
     audio.load();
     audio.play().then(() => setIsPlaying(true)).catch(e => {
@@ -241,7 +142,7 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
       audio.removeEventListener('ended', handleEnded);
     };
   }, [isRepeating, playNext]);
-
+  
   const togglePlay = useCallback(() => {
     if (!audioRef.current || !currentSong) return;
     if (isPlaying) {
@@ -254,25 +155,8 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
 
   const addSongs = useCallback(async (newSongs: Song[]) => {
     if (newSongs.length === 0) return;
-    const db = await openDB();
-    const tx = db.transaction(SONGS_STORE_NAME, 'readwrite');
-    const store = tx.objectStore(SONGS_STORE_NAME);
-
-    const currentSongList = await dbRequest<Song[]>(SONGS_STORE_NAME, 'readonly', store => store.getAll());
-
-    const uniqueNewSongs = newSongs.filter(
-        newSong => !currentSongList.some(existingSong => existingSong.id === newSong.id)
-    );
-
-    if (uniqueNewSongs.length > 0) {
-        uniqueNewSongs.forEach(song => store.put(song)); // Use put to add or update
-        setSongs(prev => [...prev, ...uniqueNewSongs]);
-    }
-
-    return new Promise<void>((resolve, reject) => {
-        tx.oncomplete = () => resolve();
-        tx.onerror = () => reject(tx.error);
-    });
+    // bulkAdd with allKeys will add only new songs and ignore existing ones.
+    await db.songs.bulkAdd(newSongs, { allKeys: true });
   }, []);
 
   const createPlaylist = useCallback(async (name: string, description: string): Promise<boolean> => {
@@ -284,102 +168,58 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
       songs: [],
       coverArt: `https://picsum.photos/seed/${Date.now()}/500/500`
     };
-    await dbRequest('playlists', 'readwrite', store => store.add(newPlaylist));
-    setPlaylists(prev => [...prev, newPlaylist]);
+    await db.playlists.add(newPlaylist);
     return true;
-  }, [canCreatePlaylist]);
+  }, [canCreatePlaylist.can]);
 
   const deletePlaylist = useCallback(async (playlistId: string) => {
-    await dbRequest('playlists', 'readwrite', store => store.delete(playlistId));
-    setPlaylists(prev => prev.filter(p => p.id !== playlistId));
+    await db.playlists.delete(playlistId);
   }, []);
 
   const updatePlaylist = useCallback(async (playlistId: string, data: Partial<Omit<Playlist, 'id'>>) => {
-    const db = await openDB();
-    const tx = db.transaction(PLAYLISTS_STORE_NAME, 'readwrite');
-    const store = tx.objectStore(PLAYLISTS_STORE_NAME);
-    const req = store.get(playlistId);
-
-    return new Promise<void>((resolve, reject) => {
-        req.onsuccess = () => {
-            const playlist = req.result;
-            if (playlist) {
-                const updatedPlaylist = { ...playlist, ...data };
-                store.put(updatedPlaylist);
-                setPlaylists(prev => prev.map(p => p.id === playlistId ? updatedPlaylist : p));
-                tx.oncomplete = () => resolve();
-            } else {
-                reject('Playlist not found');
-            }
-        };
-        req.onerror = () => reject(req.error);
-    });
+    await db.playlists.update(playlistId, data);
   }, []);
 
   const addSongsToPlaylist = useCallback(async (playlistId: string, newSongs: Song[]) => {
     if (newSongs.length === 0) return;
-    await addSongs(newSongs); // Ensure songs exist in the main library
     
-    const db = await openDB();
-    const tx = db.transaction(PLAYLISTS_STORE_NAME, 'readwrite');
-    const store = tx.objectStore(PLAYLISTS_STORE_NAME);
-    const req = store.get(playlistId);
+    // First, ensure all songs exist in the main library
+    await addSongs(newSongs);
 
-    return new Promise<void>((resolve, reject) => {
-      req.onsuccess = () => {
-          const playlist = req.result;
-          if(playlist) {
-              const currentPlaylistSongs = playlist.songs || [];
-              const uniqueNewSongsForPlaylist = newSongs.filter(
-                  newSong => !currentPlaylistSongs.some(existingSong => existingSong.id === newSong.id)
-              );
-              if (uniqueNewSongsForPlaylist.length > 0) {
-                  const updatedPlaylist = { ...playlist, songs: [...currentPlaylistSongs, ...uniqueNewSongsForPlaylist] };
-                  store.put(updatedPlaylist);
-                  setPlaylists(prev => prev.map(p => p.id === playlistId ? updatedPlaylist : p));
-              }
-              tx.oncomplete = () => resolve();
-          } else {
-            reject('Playlist not found');
-          }
-      };
-      req.onerror = () => reject(req.error);
+    // Then, add them to the playlist
+    await db.transaction('rw', db.playlists, async () => {
+      const playlist = await db.playlists.get(playlistId);
+      if (playlist) {
+        const currentSongIds = new Set(playlist.songs.map(s => s.id));
+        const uniqueNewSongs = newSongs.filter(s => !currentSongIds.has(s.id));
+        if (uniqueNewSongs.length > 0) {
+          playlist.songs.push(...uniqueNewSongs);
+          await db.playlists.put(playlist);
+        }
+      }
     });
   }, [addSongs]);
 
   const removeSongFromPlaylist = useCallback(async (playlistId: string, songId: string) => {
-    const db = await openDB();
-    const tx = db.transaction(PLAYLISTS_STORE_NAME, 'readwrite');
-    const store = tx.objectStore(PLAYLISTS_STORE_NAME);
-    const req = store.get(playlistId);
-    
-    return new Promise<void>((resolve, reject) => {
-        req.onsuccess = () => {
-            const playlist = req.result;
-            if(playlist) {
-                const updatedSongs = playlist.songs?.filter(s => s.id !== songId) || [];
-                const updatedPlaylist = { ...playlist, songs: updatedSongs };
-                store.put(updatedPlaylist);
-                setPlaylists(prev => prev.map(p => p.id === playlistId ? updatedPlaylist : p));
-                tx.oncomplete = () => resolve();
-            } else {
-                reject('Playlist not found');
-            }
-        };
-        req.onerror = () => reject(req.error);
+    await db.transaction('rw', db.playlists, async () => {
+      const playlist = await db.playlists.get(playlistId);
+      if (playlist) {
+        const updatedSongs = playlist.songs.filter(s => s.id !== songId);
+        await db.playlists.update(playlistId, { songs: updatedSongs });
+      }
     });
   }, []);
-
+  
   const moveSongToPlaylist = useCallback(async (targetPlaylistId: string, song: Song, source: 'songs' | { playlistId: string }) => {
-    // 1. Add song to the target playlist. It will only add if not already present.
+    // Add song to the target playlist.
     await addSongsToPlaylist(targetPlaylistId, [song]);
 
-    // 2. If the song came from another playlist, remove it from the source.
-    if (source !== 'songs' && source.playlistId !== targetPlaylistId) {
+    // If the song came from another playlist, remove it from the source.
+    if (typeof source !== 'string' && source.playlistId !== targetPlaylistId) {
         await removeSongFromPlaylist(source.playlistId, song.id);
     }
   }, [addSongsToPlaylist, removeSongFromPlaylist]);
-  
+
   const deleteSong = useCallback(async (songId: string) => {
     // Stop playback if it's the current song
     if (currentSong?.id === songId) {
@@ -391,47 +231,26 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
         setIsPlaying(false);
     }
 
-    // Remove from DB
-    const db = await openDB();
-    const songTx = db.transaction(SONGS_STORE_NAME, 'readwrite');
-    songTx.objectStore(SONGS_STORE_NAME).delete(songId);
-    await new Promise<void>(resolve => { songTx.oncomplete = () => resolve(); });
+    // Remove from main songs table
+    await db.songs.delete(songId);
 
-
-    const playlistTx = db.transaction(PLAYLISTS_STORE_NAME, 'readwrite');
-    const playlistStore = playlistTx.objectStore(PLAYLISTS_STORE_NAME);
-    const allPlaylistsReq = playlistStore.getAll();
-
-    allPlaylistsReq.onsuccess = async () => {
-        const allPls: Playlist[] = allPlaylistsReq.result;
-        const updatedPlaylists: Playlist[] = [];
-        let didUpdate = false;
-
-        for (const p of allPls) {
-            const initialSongCount = p.songs.length;
-            const newSongs = p.songs.filter(s => s.id !== songId);
-            if(newSongs.length !== initialSongCount) {
-                didUpdate = true;
-                const updatedPlaylist = { ...p, songs: newSongs };
-                playlistStore.put(updatedPlaylist);
-                updatedPlaylists.push(updatedPlaylist);
-            } else {
-                updatedPlaylists.push(p);
+    // Remove from all playlists
+    await db.transaction('rw', db.playlists, async () => {
+        const allPlaylists = await db.playlists.toArray();
+        for (const playlist of allPlaylists) {
+            const initialCount = playlist.songs.length;
+            const updatedSongs = playlist.songs.filter(s => s.id !== songId);
+            if (updatedSongs.length < initialCount) {
+                await db.playlists.update(playlist.id, { songs: updatedSongs });
             }
         }
-        
-        if (didUpdate) {
-             setPlaylists(updatedPlaylists);
-        }
-    };
+    });
     
-    await new Promise<void>(resolve => { playlistTx.oncomplete = () => resolve(); });
-    
-    setSongs(prev => prev.filter(s => s.id !== songId));
+    // Update queue if necessary
     setQueue(prev => prev.filter(s => s.id !== songId));
 
   }, [currentSong]);
-
+  
   const playPrev = useCallback(() => {
     if (queue.length === 0) return;
     if(audioRef.current && audioRef.current.currentTime > 3) {
@@ -452,43 +271,52 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
   const toggleRepeat = useCallback(() => setIsRepeating(prev => !prev), []);
 
   const spendCoins = useCallback(async (amount: number): Promise<boolean> => {
-    const db = await openDB();
-    const tx = db.transaction(USER_DATA_STORE_NAME, 'readwrite');
-    const store = tx.objectStore(USER_DATA_STORE_NAME);
-    const req = store.get('main');
+    const success = await db.transaction('rw', db.userData, async () => {
+        const currentData = await db.userData.get('main');
+        if (!currentData || currentData.coins < amount) {
+            return false;
+        }
 
-    return new Promise((resolve) => {
-        req.onsuccess = () => {
-            let currentData: UserData = req.result || {id: 'main', coins: 0, adFreeUntil: null};
-            if (currentData.coins < amount) {
-                resolve(false);
-                return;
-            }
-            
-            const now = new Date().getTime();
-            const currentAdFreeTime = currentData.adFreeUntil && currentData.adFreeUntil > now ? currentData.adFreeUntil : now;
-            const minutesToAdd = (amount / 1) * 10;
-            const newAdFreeUntil = currentAdFreeTime + minutesToAdd * 60 * 1000;
-            
-            const updatedUserData: UserData = {
-                ...currentData,
-                coins: currentData.coins - amount,
-                adFreeUntil: newAdFreeUntil,
-            };
+        const now = new Date().getTime();
+        const currentAdFreeTime = currentData.adFreeUntil && currentData.adFreeUntil > now ? currentData.adFreeUntil : now;
+        const minutesToAdd = amount * 10;
+        const newAdFreeUntil = currentAdFreeTime + minutesToAdd * 60 * 1000;
 
-            store.put(updatedUserData);
-            setUserData(updatedUserData);
-            resolve(true);
-        };
-        req.onerror = () => resolve(false);
+        await db.userData.update('main', {
+            coins: currentData.coins - amount,
+            adFreeUntil: newAdFreeUntil,
+        });
+        return true;
     });
+    return success;
   }, []);
 
   const value = {
-    songs, addSongs, deleteSong,
-    playlists, createPlaylist, deletePlaylist, updatePlaylist, moveSongToPlaylist, addSongsToPlaylist, removeSongFromPlaylist,
-    isPlaying, currentSong, currentTime, duration, playSong, togglePlay, playNext, playPrev, seek, isRepeating, toggleRepeat,
-    canCreatePlaylist, coins: userData.coins, spendCoins, isAdFree,
+    songs: songs ?? [],
+    addSongs,
+    deleteSong,
+    playlists: playlists ?? [],
+    createPlaylist,
+    deletePlaylist,
+    updatePlaylist,
+    moveSongToPlaylist,
+    addSongsToPlaylist,
+    removeSongFromPlaylist,
+    isPlaying,
+    currentSong,
+    currentTime,
+    duration,
+    playSong,
+    togglePlay,
+    playNext,
+    playPrev,
+    seek,
+    isRepeating,
+    toggleRepeat,
+    canCreatePlaylist,
+    coins,
+    spendCoins,
+    isAdFree,
     isHydrated
   };
 

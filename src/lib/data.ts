@@ -3,7 +3,7 @@ import type { Song, Playlist } from './types';
 
 export const initialSongs: Song[] = [
   {
-    id: '1',
+    id: 'SoundHelix-Song-1',
     title: 'Energia Cósmica',
     artist: 'Orion',
     album: 'Galáxias',
@@ -21,7 +21,7 @@ export const initialPlaylists: Playlist[] = [
     coverArt: 'https://picsum.photos/seed/playlist1/500/500',
     songs: [
       {
-        id: '2',
+        id: 'SoundHelix-Song-2',
         title: 'Ritmos da Noite',
         artist: 'Luna',
         album: 'Céu Estrelado',
