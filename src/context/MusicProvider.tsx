@@ -137,7 +137,7 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
                 const initPlaylistsTx = writeTx.objectStore(PLAYLISTS_STORE_NAME);
                 initialPlaylists.forEach(pl => initPlaylistsTx.add(pl));
                 
-                await new Promise(resolve => writeTx.oncomplete = resolve);
+                await new Promise<void>(resolve => { writeTx.oncomplete = () => resolve(); });
 
                 setSongs(initialSongs);
                 setPlaylists(initialPlaylists);
@@ -149,9 +149,11 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
             if(dbUserData) {
                 setUserData(dbUserData);
             } else {
-                const initUserTx = db.transaction(USER_DATA_STORE_NAME, 'readwrite').objectStore(USER_DATA_STORE_NAME);
+                const initUserTx = db.transaction(USER_DATA_STORE_NAME, 'readwrite');
+                const userStore = initUserTx.objectStore(USER_DATA_STORE_NAME);
                 const initialUserData = { id: 'main', coins: 0, adFreeUntil: null };
-                initUserTx.add(initialUserData);
+                userStore.add(initialUserData);
+                await new Promise<void>(resolve => { initUserTx.oncomplete = () => resolve(); });
                 setUserData(initialUserData);
             }
             
@@ -263,7 +265,7 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
     );
 
     if (uniqueNewSongs.length > 0) {
-        uniqueNewSongs.forEach(song => store.put(song));
+        uniqueNewSongs.forEach(song => store.put(song)); // Use put to add or update
         setSongs(prev => [...prev, ...uniqueNewSongs]);
     }
 
@@ -393,30 +395,37 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
     const db = await openDB();
     const songTx = db.transaction(SONGS_STORE_NAME, 'readwrite');
     songTx.objectStore(SONGS_STORE_NAME).delete(songId);
+    await new Promise<void>(resolve => { songTx.oncomplete = () => resolve(); });
+
 
     const playlistTx = db.transaction(PLAYLISTS_STORE_NAME, 'readwrite');
     const playlistStore = playlistTx.objectStore(PLAYLISTS_STORE_NAME);
     const allPlaylistsReq = playlistStore.getAll();
 
-    allPlaylistsReq.onsuccess = () => {
+    allPlaylistsReq.onsuccess = async () => {
         const allPls: Playlist[] = allPlaylistsReq.result;
         const updatedPlaylists: Playlist[] = [];
         let didUpdate = false;
 
-        allPls.forEach(p => {
+        for (const p of allPls) {
             const initialSongCount = p.songs.length;
-            p.songs = p.songs.filter(s => s.id !== songId);
-            if(p.songs.length !== initialSongCount) {
+            const newSongs = p.songs.filter(s => s.id !== songId);
+            if(newSongs.length !== initialSongCount) {
                 didUpdate = true;
-                playlistStore.put(p);
+                const updatedPlaylist = { ...p, songs: newSongs };
+                playlistStore.put(updatedPlaylist);
+                updatedPlaylists.push(updatedPlaylist);
+            } else {
+                updatedPlaylists.push(p);
             }
-            updatedPlaylists.push(p);
-        });
+        }
         
         if (didUpdate) {
-            setPlaylists(updatedPlaylists);
+             setPlaylists(updatedPlaylists);
         }
     };
+    
+    await new Promise<void>(resolve => { playlistTx.oncomplete = () => resolve(); });
     
     setSongs(prev => prev.filter(s => s.id !== songId));
     setQueue(prev => prev.filter(s => s.id !== songId));
@@ -485,5 +494,3 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
 
   return <MusicContext.Provider value={value}>{children}</MusicContext.Provider>;
 }
-
-    
