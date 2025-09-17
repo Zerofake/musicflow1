@@ -6,6 +6,7 @@ import { db } from '@/lib/db';
 import { useLiveQuery } from 'dexie-react-hooks';
 import React, { createContext, useState, useRef, useEffect, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { initialSongs } from '@/lib/data';
 
 const MAX_TOTAL_PLAYLISTS = 12;
 
@@ -87,6 +88,49 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
 
   const isHydrated = allSongs !== undefined && playlists !== undefined && userData !== undefined;
   const coins = userData?.coins ?? 0;
+
+  // Seed initial data if the database is empty
+  useEffect(() => {
+    if (!isHydrated) return;
+
+    const seedDatabase = async () => {
+      // User data
+      const userCount = await db.userData.count();
+      if (userCount === 0) {
+        await db.userData.add({ id: 'main', coins: 0, adFreeUntil: null });
+      }
+
+      // Songs
+      const songCount = await db.songs.count();
+      if (songCount === 0) {
+        await db.songs.bulkAdd(initialSongs);
+      }
+
+      // Playlists
+      const playlistCount = await db.playlists.count();
+      if (playlistCount === 0) {
+        const initialPlaylists: Playlist[] = [
+          {
+            id: `playlist_${Date.now()}_downloads`,
+            name: 'Downloads',
+            description: 'Músicas baixadas recentemente.',
+            coverArt: placeholderCover('D'),
+            songs: ['SoundHelix-Song-2'],
+          },
+          {
+            id: `playlist_${Date.now()}_gym`,
+            name: 'Vibes de Academia',
+            description: 'Para dar aquele gás no treino.',
+            coverArt: placeholderCover('V'),
+            songs: [],
+          },
+        ];
+        await db.playlists.bulkAdd(initialPlaylists);
+      }
+    };
+
+    seedDatabase();
+  }, [isHydrated]);
 
   useEffect(() => {
     if (!userData) return;

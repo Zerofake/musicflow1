@@ -1,3 +1,4 @@
+
 import Dexie, { type Table } from 'dexie';
 import type { Song, Playlist, UserData } from './types';
 import { initialSongs } from './data';
@@ -9,7 +10,8 @@ export class MusicFlowDB extends Dexie {
 
   constructor() {
     super('MusicFlowDB');
-    this.version(4).stores({
+    // Version 5: Removes onpopulate to handle seeding in the provider, fixing persistent data issues.
+    this.version(5).stores({
       songs: 'id, title, artist, album',
       playlists: 'id, name',
       userData: 'id',
@@ -18,35 +20,3 @@ export class MusicFlowDB extends Dexie {
 }
 
 export const db = new MusicFlowDB();
-
-const placeholderCover = (char: string) => {
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="500" height="500" viewBox="0 0 500 500"><rect width="500" height="500" fill="#000000"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="monospace" font-size="250" fill="#FFFFFF">${encodeURIComponent(char.charAt(0).toUpperCase())}</text></svg>`;
-    return `data:image/svg+xml;base64,${btoa(svg)}`;
-}
-
-db.on('populate', async () => {
-    await db.songs.bulkAdd(initialSongs);
-    
-    const initialPlaylists: Omit<Playlist, 'id'>[] = [
-      {
-        name: 'Downloads',
-        description: 'Músicas baixadas recentemente.',
-        coverArt: placeholderCover('D'),
-        songs: ['SoundHelix-Song-2'],
-      },
-      {
-        name: 'Vibes de Academia',
-        description: 'Para dar aquele gás no treino.',
-        coverArt: placeholderCover('V'),
-        songs: [],
-      },
-    ];
-
-    const playlistsWithIds = initialPlaylists.map(p => ({
-      ...p,
-      id: `playlist_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`
-    }));
-
-    await db.playlists.bulkAdd(playlistsWithIds as any);
-    await db.userData.add({ id: 'main', coins: 0, adFreeUntil: null });
-});
