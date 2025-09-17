@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { useMusic } from '@/hooks/useMusic';
 import { Card, CardContent } from '@/components/ui/card';
-import { Play, Plus, Info } from 'lucide-react';
+import { Play, Plus, Info, Music } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CreatePlaylistDialog } from '@/components/CreatePlaylistDialog';
 import {
@@ -62,15 +62,19 @@ export default function PlaylistsPage() {
             <Link href={`/playlists/${playlist.id}`} key={playlist.id} className="group relative">
               <Card className="overflow-hidden border-2 border-transparent group-hover:border-primary transition-colors">
                 <CardContent className="p-0">
-                  <div className="aspect-square relative">
-                    <Image
-                      src={playlist.coverArt}
-                      alt={`Capa da playlist ${playlist.name}`}
-                      fill
-                      className="object-cover transition-transform group-hover:scale-105"
-                      data-ai-hint="music playlist cover"
-                      priority={playlist.id === 1 || playlist.id === 2}
-                    />
+                  <div className="aspect-square relative bg-muted flex items-center justify-center">
+                    {playlist.coverArt ? (
+                        <Image
+                        src={playlist.coverArt}
+                        alt={`Capa da playlist ${playlist.name}`}
+                        fill
+                        className="object-cover transition-transform group-hover:scale-105"
+                        data-ai-hint="music playlist cover"
+                        priority={playlist.id === 1 || playlist.id === 2}
+                        />
+                    ) : (
+                        <Music className="h-12 w-12 text-muted-foreground" />
+                    )}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
                     <div className="absolute bottom-2 left-3">
                       <h3 className="font-bold text-white">{playlist.name}</h3>
@@ -114,3 +118,5 @@ export default function PlaylistsPage() {
     </div>
   );
 }
+
+    

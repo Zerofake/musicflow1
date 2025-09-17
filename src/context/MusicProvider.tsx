@@ -51,11 +51,6 @@ interface MusicContextType {
 
 export const MusicContext = createContext<MusicContextType | null>(null);
 
-const placeholderCover = (char: string) => {
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="500" height="500" viewBox="0 0 500 500"><rect width="500" height="500" fill="#000000"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="monospace" font-size="250" fill="#FFFFFF">${encodeURIComponent(char.charAt(0).toUpperCase())}</text></svg>`;
-  return `data:image/svg+xml;base64,${btoa(svg)}`;
-}
-
 export function MusicProvider({ children }: { children: React.ReactNode }) {
   const [isDbOpen, setIsDbOpen] = useState(false);
 
@@ -114,14 +109,14 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
             id: `playlist_${Date.now()}_downloads`,
             name: 'Downloads',
             description: 'Músicas baixadas recentemente.',
-            coverArt: placeholderCover('D'),
+            coverArt: '',
             songs: ['SoundHelix-Song-2'],
           },
           {
             id: `playlist_${Date.now()}_gym`,
             name: 'Vibes de Academia',
             description: 'Para dar aquele gás no treino.',
-            coverArt: placeholderCover('V'),
+            coverArt: '',
             songs: [],
           },
         ];
@@ -248,7 +243,7 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
       name,
       description,
       songs: [],
-      coverArt: placeholderCover(name)
+      coverArt: ''
     };
     await db.playlists.add(newPlaylist);
     return true;
@@ -412,3 +407,5 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
 
   return <MusicContext.Provider value={value}>{children}</MusicContext.Provider>;
 }
+
+    

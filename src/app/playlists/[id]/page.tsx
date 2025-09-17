@@ -7,7 +7,7 @@ import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { useMusic } from '@/hooks/useMusic';
 import { SongItem } from '@/components/SongItem';
 import { Button } from '@/components/ui/button';
-import { MoreVertical, Trash2, ArrowLeft, Edit } from 'lucide-react';
+import { MoreVertical, Trash2, ArrowLeft, Edit, Music } from 'lucide-react';
 import { AddMusicToPlaylistButton } from '@/components/AddMusicToPlaylistButton';
 import {
   DropdownMenu,
@@ -110,7 +110,7 @@ export default function PlaylistDetailPage() {
   if (!isHydrated) {
     return (
         <div>
-            <div className="relative h-60 w-full">
+            <div className="relative h-60 w-full bg-muted">
                 <div className="absolute inset-0 bg-gradient-to-t from-background via-background/70 to-transparent" />
             </div>
         </div>
@@ -123,15 +123,19 @@ export default function PlaylistDetailPage() {
 
   return (
     <div>
-      <div className="relative h-60 w-full">
-        <Image
-          src={playlist.coverArt}
-          alt={`Capa da playlist ${playlist.name}`}
-          fill
-          className="object-cover"
-          data-ai-hint="music playlist cover"
-          priority
-        />
+      <div className="relative h-60 w-full bg-muted flex items-center justify-center">
+        {playlist.coverArt ? (
+            <Image
+            src={playlist.coverArt}
+            alt={`Capa da playlist ${playlist.name}`}
+            fill
+            className="object-cover"
+            data-ai-hint="music playlist cover"
+            priority
+            />
+        ) : (
+            <Music className="h-24 w-24 text-muted-foreground" />
+        )}
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/70 to-transparent" />
         <div className="absolute top-4 left-4">
             <Button variant="ghost" size="icon" onClick={() => router.back()} className="bg-black/30 backdrop-blur-sm">
@@ -255,3 +259,5 @@ export default function PlaylistDetailPage() {
     </div>
   );
 }
+
+    
