@@ -17,6 +17,9 @@ export interface Playlist {
 }
 
 export interface UserData {
+  id: 'main';
   coins: number;
   adFreeUntil: number | null;
 }
+
+    
