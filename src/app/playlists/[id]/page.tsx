@@ -41,16 +41,16 @@ import type { Song } from '@/lib/types';
 export default function PlaylistDetailPage() {
   const params = useParams();
   const playlistId = typeof params.id === 'string' ? params.id : '';
-  const { playlists, deletePlaylist, updatePlaylist, isHydrated, getSongById, songs: allSongs } = useMusic();
+  const { playlists, deletePlaylist, updatePlaylist, isHydrated, songs: allSongs } = useMusic();
   const router = useRouter();
   
   const playlist = playlists.find((p) => p.id.toString() === playlistId);
 
   const playlistSongs = useMemo(() => {
     if (!playlist || !allSongs) return [];
-    // Create a map for quick lookups
+    // Create a map for quick lookups of all songs
     const songMap = new Map<string, Song>(allSongs.map(s => [s.id, s]));
-    // Map song IDs from playlist to full Song objects
+    // Map song IDs from playlist to full Song objects, preserving order
     return playlist.songs.map(songId => songMap.get(songId)).filter((s): s is Song => !!s);
   }, [playlist, allSongs]);
   

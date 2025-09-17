@@ -194,11 +194,13 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
   const addSongsToPlaylist = useCallback(async (playlistId: string, newSongs: Song[]) => {
     if (newSongs.length === 0) return;
     
+    // First, ensure all songs are in the central songs table
     await addSongs(newSongs);
 
     const playlistIdAsNumber = Number(playlistId);
     if (isNaN(playlistIdAsNumber)) return;
 
+    // Then, add song IDs to the playlist
     await db.transaction('rw', db.playlists, async () => {
       const playlist = await db.playlists.get(playlistIdAsNumber);
       if (playlist) {
@@ -232,7 +234,7 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
     const targetPlaylistIdNum = Number(targetPlaylistId);
     if (isNaN(targetPlaylistIdNum)) return;
     
-    // Add to target playlist
+    // Add song ID to the target playlist
     await db.transaction('rw', db.playlists, async () => {
         const playlist = await db.playlists.get(targetPlaylistIdNum);
         if (playlist && !playlist.songs.includes(songId)) {
@@ -240,7 +242,7 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
         }
     });
 
-    // Remove from source if it's a different playlist
+    // Remove from source playlist if it's a different playlist
     if (sourcePlaylistId && sourcePlaylistId !== targetPlaylistId) {
       await removeSongFromPlaylist(sourcePlaylistId, songId);
     }
@@ -256,8 +258,10 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
         setIsPlaying(false);
     }
 
+    // Remove from the central songs table
     await db.songs.delete(songId);
 
+    // Remove the song ID from all playlists
     await db.transaction('rw', db.playlists, async () => {
         const allPlaylists = await db.playlists.toArray();
         for (const playlist of allPlaylists) {
@@ -269,6 +273,7 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
         }
     });
     
+    // Update the current playing queue
     setQueue(prev => prev.filter(s => s.id !== songId));
 
   }, [currentSong]);
