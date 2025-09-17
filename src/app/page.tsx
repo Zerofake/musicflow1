@@ -45,7 +45,7 @@ export default function PlaylistsPage() {
                   </Button>
                 </div>
               </TooltipTrigger>
-              {isHydrated && (
+              {isHydrated && !canCreatePlaylist.can && (
                 <TooltipContent>
                   <p>{canCreatePlaylist.message}</p>
                 </TooltipContent>
@@ -118,5 +118,3 @@ export default function PlaylistsPage() {
     </div>
   );
 }
-
-    
