@@ -12,14 +12,15 @@ interface MusicContextType {
   // Songs
   songs: Song[];
   addSongs: (newSongs: Song[]) => Promise<void>;
-  deleteSong: (songId: string, fromPlaylistId?: string) => Promise<void>;
+  deleteSong: (songId: string) => Promise<void>;
+  getSongById: (songId: string) => Song | undefined;
   
   // Playlists
   playlists: Playlist[];
   createPlaylist: (name: string, description: string) => Promise<boolean>;
   deletePlaylist: (playlistId: string) => Promise<void>;
   updatePlaylist: (playlistId: string, data: Partial<Omit<Playlist, 'id'>>) => Promise<void>;
-  moveSongToPlaylist: (playlistId: string, song: Song, source: 'songs' | { playlistId: string }) => Promise<void>;
+  moveSongToPlaylist: (targetPlaylistId: string, songId: string, sourcePlaylistId?: string) => Promise<void>;
   addSongsToPlaylist: (playlistId: string, newSongs: Song[]) => Promise<void>;
   removeSongFromPlaylist: (playlistId: string, songId: string) => Promise<void>;
 
@@ -49,8 +50,7 @@ interface MusicContextType {
 export const MusicContext = createContext<MusicContextType | null>(null);
 
 export function MusicProvider({ children }: { children: React.ReactNode }) {
-  // Use Dexie's live query hook to keep state in sync with the database
-  const songs = useLiveQuery(() => db.songs.toArray(), []);
+  const allSongs = useLiveQuery(() => db.songs.toArray(), []);
   const playlists = useLiveQuery(() => db.playlists.toArray(), []);
   const userData = useLiveQuery(() => db.userData.get('main'), []);
 
@@ -65,10 +65,9 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  const isHydrated = songs !== undefined && playlists !== undefined && userData !== undefined;
+  const isHydrated = allSongs !== undefined && playlists !== undefined && userData !== undefined;
   const coins = userData?.coins ?? 0;
 
-  // Effect to handle ad-free status based on userData
   useEffect(() => {
     if (!userData) return;
     const checkAdStatus = () => {
@@ -89,19 +88,26 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
       ? `Você pode criar até ${MAX_TOTAL_PLAYLISTS} playlists.`
       : `Você atingiu o limite máximo de ${MAX_TOTAL_PLAYLISTS} playlists.`
   }), [playlists?.length]);
-
+  
+  const getSongById = useCallback((songId: string) => {
+    return allSongs?.find(s => s.id === songId);
+  }, [allSongs]);
 
   const playSong = useCallback((song: Song, songQueue: Song[] = []) => {
     if (audioRef.current && audioRef.current.src && !audioRef.current.paused) {
       audioRef.current.pause();
     }
     setCurrentSong(song);
-    const newQueue = songQueue.length > 0 ? songQueue : (songs || []);
+    const newQueue = songQueue.length > 0 ? songQueue : (allSongs || []);
     setQueue(newQueue);
     const songIndex = newQueue.findIndex(s => s.id === song.id);
     setCurrentSongIndex(songIndex);
 
-    if (songIndex === -1) {
+    if (songIndex === -1 && song) {
+        // If song is not in queue, just play it and set it as the whole queue
+        setQueue([song]);
+        setCurrentSongIndex(0);
+    } else if (songIndex === -1 && !song) {
         setCurrentSong(null);
         setIsPlaying(false);
         return;
@@ -116,7 +122,7 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
         console.error("Error playing audio:", e);
         setIsPlaying(false);
     });
-  }, [songs]);
+  }, [allSongs]);
 
   const playNext = useCallback(() => {
     if (queue.length === 0) return;
@@ -155,14 +161,12 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
 
   const addSongs = useCallback(async (newSongs: Song[]) => {
     if (newSongs.length === 0) return;
-    // bulkAdd with allKeys will add only new songs and ignore existing ones.
     await db.songs.bulkAdd(newSongs, { allKeys: true });
   }, []);
 
   const createPlaylist = useCallback(async (name: string, description: string): Promise<boolean> => {
     if (!canCreatePlaylist.can || !name || name.length > 200) return false;
     
-    // Do not provide an `id` for auto-incremented primary keys. Dexie handles it.
     const newPlaylist: Omit<Playlist, 'id'> = {
       name,
       description,
@@ -190,20 +194,18 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
   const addSongsToPlaylist = useCallback(async (playlistId: string, newSongs: Song[]) => {
     if (newSongs.length === 0) return;
     
-    // First, ensure all songs exist in the main library
     await addSongs(newSongs);
 
     const playlistIdAsNumber = Number(playlistId);
     if (isNaN(playlistIdAsNumber)) return;
 
-    // Then, add them to the playlist
     await db.transaction('rw', db.playlists, async () => {
       const playlist = await db.playlists.get(playlistIdAsNumber);
       if (playlist) {
-        const currentSongIds = new Set(playlist.songs.map(s => s.id));
-        const uniqueNewSongs = newSongs.filter(s => !currentSongIds.has(s.id));
-        if (uniqueNewSongs.length > 0) {
-          playlist.songs.push(...uniqueNewSongs);
+        const currentSongIds = new Set(playlist.songs);
+        const newSongIds = newSongs.map(s => s.id).filter(id => !currentSongIds.has(id));
+        if (newSongIds.length > 0) {
+          playlist.songs.push(...newSongIds);
           await db.playlists.put(playlist);
         }
       }
@@ -217,22 +219,34 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
     await db.transaction('rw', db.playlists, async () => {
       const playlist = await db.playlists.get(playlistIdAsNumber);
       if (playlist) {
-        const updatedSongs = playlist.songs.filter(s => s.id !== songId);
-        await db.playlists.update(playlistIdAsNumber, { songs: updatedSongs });
+        const initialCount = playlist.songs.length;
+        const updatedSongIds = playlist.songs.filter(id => id !== songId);
+        if (updatedSongIds.length < initialCount) {
+          await db.playlists.update(playlistIdAsNumber, { songs: updatedSongIds });
+        }
       }
     });
   }, []);
   
-  const moveSongToPlaylist = useCallback(async (targetPlaylistId: string, song: Song, source: 'songs' | { playlistId: string }) => {
-    await addSongsToPlaylist(targetPlaylistId, [song]);
+  const moveSongToPlaylist = useCallback(async (targetPlaylistId: string, songId: string, sourcePlaylistId?: string) => {
+    const targetPlaylistIdNum = Number(targetPlaylistId);
+    if (isNaN(targetPlaylistIdNum)) return;
+    
+    // Add to target playlist
+    await db.transaction('rw', db.playlists, async () => {
+        const playlist = await db.playlists.get(targetPlaylistIdNum);
+        if (playlist && !playlist.songs.includes(songId)) {
+            await db.playlists.update(targetPlaylistIdNum, { songs: [...playlist.songs, songId]});
+        }
+    });
 
-    if (typeof source !== 'string' && source.playlistId !== targetPlaylistId) {
-      await removeSongFromPlaylist(source.playlistId, song.id);
+    // Remove from source if it's a different playlist
+    if (sourcePlaylistId && sourcePlaylistId !== targetPlaylistId) {
+      await removeSongFromPlaylist(sourcePlaylistId, songId);
     }
-  }, [addSongsToPlaylist, removeSongFromPlaylist]);
+  }, [removeSongFromPlaylist]);
 
   const deleteSong = useCallback(async (songId: string) => {
-    // Stop playback if it's the current song
     if (currentSong?.id === songId) {
         if (audioRef.current) {
             audioRef.current.pause();
@@ -242,22 +256,19 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
         setIsPlaying(false);
     }
 
-    // Remove from main songs table
     await db.songs.delete(songId);
 
-    // Remove from all playlists
     await db.transaction('rw', db.playlists, async () => {
         const allPlaylists = await db.playlists.toArray();
         for (const playlist of allPlaylists) {
             const initialCount = playlist.songs.length;
-            const updatedSongs = playlist.songs.filter(s => s.id !== songId);
+            const updatedSongs = playlist.songs.filter(sId => sId !== songId);
             if (updatedSongs.length < initialCount && playlist.id) {
                 await db.playlists.update(playlist.id, { songs: updatedSongs });
             }
         }
     });
     
-    // Update queue if necessary
     setQueue(prev => prev.filter(s => s.id !== songId));
 
   }, [currentSong]);
@@ -303,9 +314,10 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const value = {
-    songs: songs ?? [],
+    songs: allSongs ?? [],
     addSongs,
     deleteSong,
+    getSongById,
     playlists: playlists ?? [],
     createPlaylist,
     deletePlaylist,
@@ -333,5 +345,3 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
 
   return <MusicContext.Provider value={value}>{children}</MusicContext.Provider>;
 }
-
-    

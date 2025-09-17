@@ -69,7 +69,7 @@ export default function PlaylistsPage() {
                       fill
                       className="object-cover transition-transform group-hover:scale-105"
                       data-ai-hint="music playlist cover"
-                      priority={playlist.id === '1' || playlist.id === '2'}
+                      priority={playlist.id === 1 || playlist.id === 2}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
                     <div className="absolute bottom-2 left-3">

@@ -30,8 +30,8 @@ import {
 
 interface SongItemProps {
   song: Song;
-  playlistSongs: Song[];
-  playlistId?: string; // Se presente, a música está em uma playlist
+  playlistSongs?: Song[]; // This might be optional now or derived differently
+  playlistId?: string; // If present, the music is in a playlist context
   draggable?: boolean;
   onDragStart?: (e: React.DragEvent<HTMLDivElement>, songId: string) => void;
   onDragEnter?: (e: React.DragEvent<HTMLDivElement>, songId: string) => void;
@@ -54,23 +54,23 @@ export function SongItem({ song, playlistSongs, playlistId, draggable = false, .
     if (isActive) {
         togglePlay();
     } else {
-        playSong(song, playlistSongs);
+        // If playlistSongs is available, use it to build the queue
+        playSong(song, playlistSongs || [song]);
     }
   };
 
-  const handleMoveSongToPlaylist = (targetPlaylistId: string) => {
-    const source = playlistId ? { playlistId } : 'songs';
-    moveSongToPlaylist(targetPlaylistId, song, source);
+  const handleMoveSong = (targetPlaylistId: string) => {
+    moveSongToPlaylist(targetPlaylistId, song.id, playlistId);
   };
   
-  const handleRemoveSongFromPlaylist = () => {
+  const handleRemoveFromPlaylist = () => {
     if (playlistId) {
       removeSongFromPlaylist(playlistId, song.id);
     }
   };
 
-  const handleDeleteSong = () => {
-    deleteSong(song.id, playlistId);
+  const handleDelete = () => {
+    deleteSong(song.id);
     setIsDeleteDialogOpen(false);
   }
 
@@ -139,15 +139,16 @@ export function SongItem({ song, playlistSongs, playlistId, draggable = false, .
             <DropdownMenuPortal>
               <DropdownMenuSubContent>
                 {playlists.filter(p => p.id.toString() !== playlistId).map((p) => (
-                  <DropdownMenuItem key={p.id} onClick={() => handleMoveSongToPlaylist(p.id.toString())}>
+                  <DropdownMenuItem key={p.id} onClick={() => handleMoveSong(p.id.toString())}>
                     {p.name}
                   </DropdownMenuItem>
                 ))}
+                {playlists.length === 0 && <DropdownMenuItem disabled>Nenhuma outra playlist</DropdownMenuItem>}
               </DropdownMenuSubContent>
             </DropdownMenuPortal>
           </DropdownMenuSub>
           {playlistId && (
-            <DropdownMenuItem onClick={handleRemoveSongFromPlaylist}>
+            <DropdownMenuItem onClick={handleRemoveFromPlaylist}>
               <MinusCircle className="mr-2 h-4 w-4" />
               <span>Remover da playlist</span>
             </DropdownMenuItem>
@@ -162,21 +163,21 @@ export function SongItem({ song, playlistSongs, playlistId, draggable = false, .
     </div>
 
     <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Excluir Música?</AlertDialogTitle>
-            <AlertDialogDescription>
-              A música "{song.title}" será removida permanentemente. Esta ação não pode ser desfeita.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteSong} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Excluir
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Excluir Música?</AlertDialogTitle>
+          <AlertDialogDescription>
+            A música "{song.title}" será removida permanentemente de todo o aplicativo. Esta ação não pode ser desfeita.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+            Excluir
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
     </>
   );
 }

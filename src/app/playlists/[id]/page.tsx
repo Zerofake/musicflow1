@@ -3,7 +3,7 @@
 
 import Image from 'next/image';
 import { notFound, useRouter, useParams } from 'next/navigation';
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { useMusic } from '@/hooks/useMusic';
 import { SongItem } from '@/components/SongItem';
 import { Button } from '@/components/ui/button';
@@ -36,14 +36,23 @@ import {
   } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import type { Song } from '@/lib/types';
 
 export default function PlaylistDetailPage() {
   const params = useParams();
   const playlistId = typeof params.id === 'string' ? params.id : '';
-  const { playlists, deletePlaylist, updatePlaylist, isHydrated } = useMusic();
+  const { playlists, deletePlaylist, updatePlaylist, isHydrated, getSongById, songs: allSongs } = useMusic();
   const router = useRouter();
   
   const playlist = playlists.find((p) => p.id.toString() === playlistId);
+
+  const playlistSongs = useMemo(() => {
+    if (!playlist || !allSongs) return [];
+    // Create a map for quick lookups
+    const songMap = new Map<string, Song>(allSongs.map(s => [s.id, s]));
+    // Map song IDs from playlist to full Song objects
+    return playlist.songs.map(songId => songMap.get(songId)).filter((s): s is Song => !!s);
+  }, [playlist, allSongs]);
   
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -70,14 +79,15 @@ export default function PlaylistDetailPage() {
 
   const handleDragEnd = () => {
     if (dragItem.current && dragOverItem.current && dragItem.current !== dragOverItem.current && playlistId) {
-      const newSongs = [...(playlist?.songs || [])];
-      const dragItemIndex = newSongs.findIndex(s => s.id === dragItem.current);
-      const dragOverItemIndex = newSongs.findIndex(s => s.id === dragOverItem.current);
+      const currentSongIds = playlist?.songs || [];
+      const dragItemIndex = currentSongIds.findIndex(id => id === dragItem.current);
+      const dragOverItemIndex = currentSongIds.findIndex(id => id === dragOverItem.current);
       
-      const [removed] = newSongs.splice(dragItemIndex, 1);
-      newSongs.splice(dragOverItemIndex, 0, removed);
+      const newSongIds = [...currentSongIds];
+      const [removed] = newSongIds.splice(dragItemIndex, 1);
+      newSongIds.splice(dragOverItemIndex, 0, removed);
       
-      updatePlaylist(playlistId, { songs: newSongs });
+      updatePlaylist(playlistId, { songs: newSongIds });
     }
     dragItem.current = null;
     dragOverItem.current = null;
@@ -159,12 +169,12 @@ export default function PlaylistDetailPage() {
             <AddMusicToPlaylistButton playlistId={playlistId} />
         </div>
         <div className="space-y-1">
-          {playlist.songs && playlist.songs.length > 0 ? (
-            playlist.songs.map((song) => (
+          {playlistSongs && playlistSongs.length > 0 ? (
+            playlistSongs.map((song) => (
               <SongItem 
                 key={song.id} 
                 song={song}
-                playlistSongs={playlist.songs}
+                playlistSongs={playlistSongs}
                 playlistId={playlistId}
                 draggable
                 onDragStart={handleDragStart}
@@ -245,5 +255,3 @@ export default function PlaylistDetailPage() {
     </div>
   );
 }
-
-    
