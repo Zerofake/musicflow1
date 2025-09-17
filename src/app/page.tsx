@@ -28,9 +28,13 @@ export default function PlaylistsPage() {
 
   const CreateButton = () => {
     const button = (
-       <Button onClick={handleCreatePlaylistClick} disabled={!isHydrated || !canCreatePlaylist.can} size="sm">
-          <Plus className="mr-2 h-4 w-4" /> Criar Playlist
-        </Button>
+      <Button
+        onClick={handleCreatePlaylistClick}
+        disabled={!isHydrated || !canCreatePlaylist.can}
+        size="sm"
+      >
+        <Plus className="mr-2 h-4 w-4" /> Criar Playlist
+      </Button>
     );
 
     if (isHydrated && !canCreatePlaylist.can) {
@@ -39,7 +43,7 @@ export default function PlaylistsPage() {
           <Tooltip>
             <TooltipTrigger asChild>
               {/* O div wrapper é necessário para o tooltip funcionar em um botão desabilitado */}
-              <div className="inline-block">
+              <div className="inline-block cursor-not-allowed">
                 {button}
               </div>
             </TooltipTrigger>
