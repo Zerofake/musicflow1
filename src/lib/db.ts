@@ -19,21 +19,25 @@ export class MusicFlowDB extends Dexie {
 
 export const db = new MusicFlowDB();
 
+const placeholderCover = (char: string) => {
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="500" height="500" viewBox="0 0 500 500"><rect width="500" height="500" fill="#000000"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="monospace" font-size="250" fill="#FFFFFF">${encodeURIComponent(char)}</text></svg>`;
+    return `data:image/svg+xml;base64,${btoa(svg)}`;
+}
+
 db.on('populate', async () => {
     await db.songs.bulkAdd(initialSongs);
     
-    // As playlists iniciais precisam ter os IDs das musicas iniciais
     const initialPlaylists: Omit<Playlist, 'id'>[] = [
       {
         name: 'Downloads',
         description: 'Músicas baixadas recentemente.',
-        coverArt: 'https://placehold.co/500x500/000000/FFFFFF/png?text=D',
+        coverArt: placeholderCover('D'),
         songs: ['SoundHelix-Song-2'],
       },
       {
         name: 'Vibes de Academia',
         description: 'Para dar aquele gás no treino.',
-        coverArt: 'https://placehold.co/500x500/000000/FFFFFF/png?text=V',
+        coverArt: placeholderCover('V'),
         songs: [],
       },
     ];

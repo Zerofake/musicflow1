@@ -176,7 +176,11 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
   const addSongs = useCallback(async (newSongs: Song[]) => {
     if (newSongs.length === 0) return;
     try {
-        await db.songs.bulkAdd(newSongs);
+        const existingSongIds = new Set((await db.songs.toArray()).map(s => s.id));
+        const songsToAdd = newSongs.filter(s => !existingSongIds.has(s.id));
+        if (songsToAdd.length > 0) {
+          await db.songs.bulkAdd(songsToAdd);
+        }
     } catch (error) {
         console.error("Failed to add songs:", error);
         toast({
@@ -190,12 +194,16 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
   const createPlaylist = useCallback(async (name: string, description: string): Promise<boolean> => {
     if (!canCreatePlaylist.can || !name || name.length > 200) return false;
     
+    // Simple placeholder SVG as a string
+    const svgString = `<svg xmlns="http://www.w3.org/2000/svg" width="500" height="500" viewBox="0 0 500 500"><rect width="500" height="500" fill="#000000"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="monospace" font-size="250" fill="#FFFFFF">${encodeURIComponent(name.charAt(0))}</text></svg>`;
+    const coverArt = `data:image/svg+xml;base64,${btoa(svgString)}`;
+
     const newPlaylist: Playlist = {
       id: `playlist_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
       name,
       description,
       songs: [],
-      coverArt: `https://placehold.co/500x500/000000/FFFFFF/png?text=${encodeURIComponent(name.charAt(0))}`
+      coverArt
     };
     await db.playlists.add(newPlaylist);
     return true;
