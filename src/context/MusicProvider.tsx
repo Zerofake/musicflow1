@@ -224,12 +224,10 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
   }, []);
   
   const moveSongToPlaylist = useCallback(async (targetPlaylistId: string, song: Song, source: 'songs' | { playlistId: string }) => {
-    // Add song to the target playlist.
     await addSongsToPlaylist(targetPlaylistId, [song]);
 
-    // If the song came from another playlist, remove it from the source.
     if (typeof source !== 'string' && source.playlistId !== targetPlaylistId) {
-        await removeSongFromPlaylist(source.playlistId, song.id);
+      await removeSongFromPlaylist(source.playlistId, song.id);
     }
   }, [addSongsToPlaylist, removeSongFromPlaylist]);
 
