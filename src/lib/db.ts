@@ -13,23 +13,6 @@ export class MusicFlowDB extends Dexie {
       songs: 'id, title, artist, album',
       playlists: '++id, name',
       userData: 'id',
-    }).upgrade(async tx => {
-      // This migration is for safety, in case old data structure exists.
-      // It ensures playlist 'songs' are arrays of strings (IDs).
-      const playlistsToMigrate = await tx.table('playlists').toArray();
-      for (const p of playlistsToMigrate) {
-        if (p.songs.length > 0 && typeof p.songs[0] === 'object') {
-          // This is the old format where songs were objects. Convert to IDs.
-          const songIds = p.songs.map((s: any) => s.id).filter(Boolean);
-          await tx.table('playlists').update(p.id, { songs: songIds });
-        }
-      }
-    });
-
-     this.version(2).stores({
-      songs: 'id, title, artist, album',
-      playlists: '++id, name',
-      userData: 'id',
     });
   }
 }
@@ -37,9 +20,16 @@ export class MusicFlowDB extends Dexie {
 export const db = new MusicFlowDB();
 
 db.on('populate', async () => {
-    // This function runs only once, when the database is first created.
-    // It seeds the DB with initial data.
     await db.songs.bulkAdd(initialSongs);
-    await db.playlists.bulkAdd(initialPlaylists as any);
+    
+    // As playlists iniciais precisam ter os IDs das musicas iniciais
+    const modifiedInitialPlaylists = initialPlaylists.map(p => {
+        if (p.name === 'Downloads') {
+            return { ...p, songs: ['SoundHelix-Song-2'] };
+        }
+        return p;
+    });
+
+    await db.playlists.bulkAdd(modifiedInitialPlaylists as any);
     await db.userData.add({ id: 'main', coins: 0, adFreeUntil: null });
 });

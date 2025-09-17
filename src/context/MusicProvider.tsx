@@ -51,23 +51,21 @@ interface MusicContextType {
 export const MusicContext = createContext<MusicContextType | null>(null);
 
 export function MusicProvider({ children }: { children: React.ReactNode }) {
-  const [dbReady, setDbReady] = useState(false);
+  const [isDbOpen, setIsDbOpen] = useState(false);
 
   useEffect(() => {
-    const openDb = async () => {
-      try {
-        await db.open();
-        setDbReady(true);
-      } catch (err) {
+    db.open()
+      .then(() => {
+        setIsDbOpen(true);
+      })
+      .catch((err) => {
         console.error(`Failed to open db: ${err.stack || err}`);
-      }
-    };
-    openDb();
+      });
   }, []);
 
-  const allSongs = useLiveQuery(() => dbReady ? db.songs.toArray() : [], [dbReady]);
-  const playlists = useLiveQuery(() => dbReady ? db.playlists.toArray() : [], [dbReady]);
-  const userData = useLiveQuery(() => dbReady ? db.userData.get('main') : undefined, [dbReady]);
+  const allSongs = useLiveQuery(() => isDbOpen ? db.songs.toArray() : [], [isDbOpen], []);
+  const playlists = useLiveQuery(() => isDbOpen ? db.playlists.toArray() : [], [isDbOpen], []);
+  const userData = useLiveQuery(() => isDbOpen ? db.userData.get('main') : undefined, [isDbOpen]);
 
   const [currentSong, setCurrentSong] = useState<Song | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
