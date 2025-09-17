@@ -26,38 +26,6 @@ export default function PlaylistsPage() {
     }
   }
 
-  const CreateButton = () => {
-    const button = (
-      <Button
-        onClick={handleCreatePlaylistClick}
-        disabled={!isHydrated || !canCreatePlaylist.can}
-        size="sm"
-      >
-        <Plus className="mr-2 h-4 w-4" /> Criar Playlist
-      </Button>
-    );
-
-    if (isHydrated && !canCreatePlaylist.can) {
-      return (
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              {/* O div wrapper é necessário para o tooltip funcionar em um botão desabilitado */}
-              <div className="inline-block cursor-not-allowed">
-                {button}
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>{canCreatePlaylist.message}</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      );
-    }
-
-    return button;
-  };
-
   return (
     <div className="p-4 sm:p-6">
       <TimedAd />
@@ -67,7 +35,26 @@ export default function PlaylistsPage() {
 
       <div className="flex justify-between items-center mb-6 mt-4">
           <h2 className="text-xl font-semibold">Suas Playlists</h2>
-          <CreateButton />
+          {isHydrated && canCreatePlaylist.can ? (
+            <Button onClick={handleCreatePlaylistClick} size="sm">
+              <Plus className="mr-2 h-4 w-4" /> Criar Playlist
+            </Button>
+          ) : (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="inline-block"> 
+                    <Button size="sm" disabled>
+                      <Plus className="mr-2 h-4 w-4" /> Criar Playlist
+                    </Button>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{isHydrated ? canCreatePlaylist.message : "Carregando..."}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
       </div>
 
       <CreatePlaylistDialog open={dialogOpen} onOpenChange={setDialogOpen} />
