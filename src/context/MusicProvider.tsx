@@ -407,5 +407,3 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
 
   return <MusicContext.Provider value={value}>{children}</MusicContext.Provider>;
 }
-
-    
