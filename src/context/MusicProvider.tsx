@@ -55,18 +55,56 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
   const [isDbOpen, setIsDbOpen] = useState(false);
 
   useEffect(() => {
-    db.open()
-      .then(() => {
+    const initDb = async () => {
+      try {
+        await db.open();
+        
+        // Seed initial data if the database is empty
+        await db.transaction('rw', db.userData, db.songs, db.playlists, async () => {
+          const userCount = await db.userData.count();
+          if (userCount === 0) {
+            await db.userData.add({ id: 'main', coins: 0, adFreeUntil: null });
+          }
+
+          const songCount = await db.songs.count();
+          if (songCount === 0) {
+            await db.songs.bulkAdd(initialSongs);
+          }
+          
+          const playlistCount = await db.playlists.count();
+          if (playlistCount === 0) {
+            const initialPlaylists: Playlist[] = [
+              {
+                id: `playlist_${Date.now()}_downloads`,
+                name: 'Downloads',
+                description: 'Músicas baixadas recentemente.',
+                coverArt: '',
+                songs: ['SoundHelix-Song-2'],
+              },
+              {
+                id: `playlist_${Date.now()}_gym`,
+                name: 'Vibes de Academia',
+                description: 'Para dar aquele gás no treino.',
+                coverArt: '',
+                songs: [],
+              },
+            ];
+            await db.playlists.bulkAdd(initialPlaylists);
+          }
+        });
+
         setIsDbOpen(true);
-        console.log("Database opened successfully");
-      })
-      .catch((err) => {
-        console.error(`Failed to open db: ${err.stack || err}`);
-      });
+        console.log("Database opened and seeded successfully");
+      } catch (err) {
+        console.error(`Failed to open and seed db: ${err.stack || err}`);
+      }
+    };
+    
+    initDb();
   }, []);
 
-  const allSongs = useLiveQuery(() => isDbOpen ? db.songs.toArray() : [], [isDbOpen], []);
-  const playlists = useLiveQuery(() => isDbOpen ? db.playlists.toArray() : [], [isDbOpen], []);
+  const allSongs = useLiveQuery(() => isDbOpen ? db.songs.toArray() : [], [isDbOpen]);
+  const playlists = useLiveQuery(() => isDbOpen ? db.playlists.toArray() : [], [isDbOpen]);
   const userData = useLiveQuery(() => isDbOpen ? db.userData.get('main') : undefined, [isDbOpen]);
 
   const [currentSong, setCurrentSong] = useState<Song | null>(null);
@@ -84,49 +122,6 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
   const isHydrated = allSongs !== undefined && playlists !== undefined && userData !== undefined;
   const coins = userData?.coins ?? 0;
 
-  // Seed initial data if the database is empty
-  useEffect(() => {
-    if (!isHydrated) return;
-
-    const seedDatabase = async () => {
-      // User data
-      const userCount = await db.userData.count();
-      if (userCount === 0) {
-        await db.userData.add({ id: 'main', coins: 0, adFreeUntil: null });
-      }
-
-      // Songs
-      const songCount = await db.songs.count();
-      if (songCount === 0) {
-        await db.songs.bulkAdd(initialSongs);
-      }
-
-      // Playlists
-      const playlistCount = await db.playlists.count();
-      if (playlistCount === 0) {
-        const initialPlaylists: Playlist[] = [
-          {
-            id: `playlist_${Date.now()}_downloads`,
-            name: 'Downloads',
-            description: 'Músicas baixadas recentemente.',
-            coverArt: '',
-            songs: ['SoundHelix-Song-2'],
-          },
-          {
-            id: `playlist_${Date.now()}_gym`,
-            name: 'Vibes de Academia',
-            description: 'Para dar aquele gás no treino.',
-            coverArt: '',
-            songs: [],
-          },
-        ];
-        await db.playlists.bulkAdd(initialPlaylists);
-      }
-    };
-
-    seedDatabase();
-  }, [isHydrated]);
-
   useEffect(() => {
     if (!userData) return;
     const checkAdStatus = () => {
@@ -141,12 +136,15 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
     return () => clearInterval(interval);
   }, [userData, isAdFree]);
 
-  const canCreatePlaylist = React.useMemo(() => ({
-    can: (playlists?.length ?? 0) < MAX_TOTAL_PLAYLISTS,
-    message: (playlists?.length ?? 0) < MAX_TOTAL_PLAYLISTS
-      ? `Você pode criar até ${MAX_TOTAL_PLAYLISTS} playlists.`
-      : `Você atingiu o limite máximo de ${MAX_TOTAL_PLAYLISTS} playlists.`
-  }), [playlists?.length]);
+  const canCreatePlaylist = React.useMemo(() => {
+    const numPlaylists = playlists?.length ?? 0;
+    return {
+        can: numPlaylists < MAX_TOTAL_PLAYLISTS,
+        message: numPlaylists < MAX_TOTAL_PLAYLISTS
+        ? `Você pode criar até ${MAX_TOTAL_PLAYLISTS} playlists.`
+        : `Você atingiu o limite máximo de ${MAX_TOTAL_PLAYLISTS} playlists.`
+    }
+  }, [playlists]);
   
   const getSongById = useCallback((songId: string) => {
     return allSongs?.find(s => s.id === songId);
