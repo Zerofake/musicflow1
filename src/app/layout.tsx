@@ -1,13 +1,34 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { MusicProvider } from '@/context/MusicProvider';
 import { AppShell } from '@/components/AppShell';
 import { Toaster } from '@/components/ui/toaster';
 
+const APP_NAME = "Music Flow";
+const APP_DESCRIPTION = "Seu player de música offline com sugestões inteligentes.";
+
 export const metadata: Metadata = {
-  title: 'Music Flow',
-  description: 'Seu player de música offline com sugestões inteligentes.',
+  applicationName: APP_NAME,
+  title: {
+    default: APP_NAME,
+    template: `%s - ${APP_NAME}`,
+  },
+  description: APP_DESCRIPTION,
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: APP_NAME,
+  },
+  formatDetection: {
+    telephone: false,
+  },
 };
+
+export const viewport: Viewport = {
+  themeColor: "#0A0A0A",
+};
+
 
 export default function RootLayout({
   children,
@@ -16,9 +37,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR" className="dark">
-      <head>
-        <link rel="manifest" href="/manifest.json" />
-      </head>
       <body className="font-body antialiased bg-black">
         <MusicProvider>
           <AppShell>
