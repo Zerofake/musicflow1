@@ -4,7 +4,7 @@ import { MusicProvider } from '@/context/MusicProvider';
 import { AppShell } from '@/components/AppShell';
 import { Toaster } from '@/components/ui/toaster';
 
-const APP_NAME = "Music Flow - Reprodutor de Musica MP3 e WAV";
+const APP_NAME = "Music Flow";
 const APP_DESCRIPTION = "Seu player de música offline com sugestões inteligentes.";
 
 export const metadata: Metadata = {
