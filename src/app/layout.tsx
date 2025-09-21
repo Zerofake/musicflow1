@@ -9,7 +9,10 @@ const APP_DESCRIPTION = "Seu player de música offline com sugestões inteligent
 
 export const metadata: Metadata = {
   applicationName: APP_NAME,
-  title: APP_NAME, // Alterado para forçar o nome
+  title: {
+    default: APP_NAME,
+    template: `%s | ${APP_NAME}`,
+  },
   description: APP_DESCRIPTION,
   manifest: "/manifest.json",
   appleWebApp: {
