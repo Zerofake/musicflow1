@@ -9,6 +9,7 @@ import { Play, Plus, Info, Music } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CreatePlaylistDialog } from '@/components/CreatePlaylistDialog';
 import { TimedAd } from '@/components/TimedAd';
+import { AdsterraAd } from '@/components/AdsterraAd';
 
 export default function PlaylistsPage() {
   const { playlists, canCreatePlaylist, isHydrated } = useMusic();
@@ -23,6 +24,7 @@ export default function PlaylistsPage() {
   return (
     <div className="p-4 sm:p-6">
       <TimedAd />
+      <AdsterraAd />
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Playlists</h1>
       </div>
