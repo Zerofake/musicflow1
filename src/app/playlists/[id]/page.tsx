@@ -261,5 +261,3 @@ export default function PlaylistDetailPage() {
     </div>
   );
 }
-
-    
