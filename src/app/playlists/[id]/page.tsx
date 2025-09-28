@@ -37,6 +37,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import type { Song } from '@/lib/types';
+import AdsterraBanner from '@/components/AdsterraBanner';
 
 export default function PlaylistDetailPage() {
   const params = useParams();
@@ -169,6 +170,7 @@ export default function PlaylistDetailPage() {
       </div>
       
       <div className="p-4 sm:p-6">
+        <AdsterraBanner />
         <div className="flex justify-end mb-4">
             <AddMusicToPlaylistButton playlistId={playlistId} />
         </div>
