@@ -34,6 +34,15 @@ export interface AffiliateAd {
   // Anúncios para o banner inferior (AffiliateAd)
   export const affiliateAds: AffiliateAd[] = [
     {
+      id: '20',
+      imageUrl: 'https://ae01.alicdn.com/kf/Sa6a55c3904e8446b9bd86b1a7a9bd73ah.jpg_80x80.jpg',
+      title: 'Camisa Estampa Naruto Kakashi',
+      description: 'Estilo anime para seu guarda-roupa.',
+      link: 'https://s.click.aliexpress.com/e/_c4mgDu0b',
+      source: 'AliExpress',
+      price: 'US$ 2.99',
+    },
+    {
       id: '1',
       imageUrl: 'https://ae01.alicdn.com/kf/S8b762365b4f14e179ae3098dee3bd9582.jpg',
       title: 'Tênis de Corrida Feminino',
