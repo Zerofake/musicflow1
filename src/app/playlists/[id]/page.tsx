@@ -170,7 +170,6 @@ export default function PlaylistDetailPage() {
       </div>
       
       <div className="p-4 sm:p-6">
-        <AdsterraBanner />
         <div className="flex justify-end mb-4">
             <AddMusicToPlaylistButton playlistId={playlistId} />
         </div>
