@@ -53,13 +53,12 @@ export const MusicContext = createContext<MusicContextType | null>(null);
 
 export function MusicProvider({ children }: { children: React.ReactNode }) {
   const [isDbOpen, setIsDbOpen] = useState(false);
-
+  
   useEffect(() => {
     const initDb = async () => {
       try {
         await db.open();
         
-        // Seed initial data if the database is empty
         await db.transaction('rw', db.userData, db.songs, db.playlists, async () => {
           const userCount = await db.userData.count();
           if (userCount === 0) {
@@ -115,6 +114,7 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
   const [duration, setDuration] = useState(0);
   const [isRepeating, setIsRepeating] = useState(false);
   const [isAdFree, setIsAdFree] = useState(false);
+  const [isMsStorePurchased, setIsMsStorePurchased] = useState(false);
   
   const { toast } = useToast();
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -123,18 +123,43 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
   const coins = userData?.coins ?? 0;
 
   useEffect(() => {
+    const checkMsStoreLicense = async () => {
+      if (typeof window !== 'undefined' && 'getDigitalGoodsService' in window) {
+        try {
+          const service = await (window as any).getDigitalGoodsService("https://store.microsoft.com");
+          const history = await service.listPurchaseHistory();
+
+          if (history.length > 0) {
+            console.log("Microsoft Store license found. User is permanently premium.");
+            setIsMsStorePurchased(true);
+          }
+        } catch (error) {
+          console.error("Error checking Microsoft Store license:", error);
+        }
+      }
+    };
+
+    checkMsStoreLicense();
+  }, []);
+
+  useEffect(() => {
+    if (isMsStorePurchased) {
+      if (!isAdFree) setIsAdFree(true);
+      return; 
+    }
+
     if (!userData) return;
     const checkAdStatus = () => {
       const now = new Date().getTime();
-      const adFree = userData.adFreeUntil ? now < userData.adFreeUntil : false;
-      if (adFree !== isAdFree) {
-        setIsAdFree(adFree);
+      const tempAdFree = userData.adFreeUntil ? now < userData.adFreeUntil : false;
+      if (tempAdFree !== isAdFree) {
+        setIsAdFree(tempAdFree);
       }
     };
     checkAdStatus();
     const interval = setInterval(checkAdStatus, 10000);
     return () => clearInterval(interval);
-  }, [userData, isAdFree]);
+  }, [userData, isAdFree, isMsStorePurchased]);
 
   const canCreatePlaylist = React.useMemo(() => {
     const numPlaylists = playlists?.length ?? 0;
