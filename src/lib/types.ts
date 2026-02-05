@@ -20,4 +20,5 @@ export interface UserData {
   id: 'main';
   coins: number;
   adFreeUntil: number | null;
+  firstOpenDate: number | null;
 }
